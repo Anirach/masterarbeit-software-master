@@ -1,0 +1,17 @@
+/cypress/node_modules/
+/context.md
+/prompt-templates.md
+/webapp/*.md
+/webapp/*.pdf
+/cypress/cypress/screenshots
+/cypress/cypress/videos
+/demo/
+
+**/.claude/settings.local.json
+/webapp/CLAUDE.md
+/ci-helm/values.yaml
+/webapp/htmlReport/
+/testdaten
+
+# YoYo AI version control directory
+.yoyo/
