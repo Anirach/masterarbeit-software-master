@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Registrierung')}">
+    <title>Registrierung - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/login}">Anmeldung</a></li>
+                    <li class="breadcrumb-item active">Registrierung</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <h2>Registrierung</h2>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div th:if="${registrationError}" class="alert alert-danger" role="alert" th:text="${registrationError}">
+                                Fehler bei der Registrierung
+                            </div>
+                            
+                            <form th:action="@{/registration}" th:object="${registrierung}" method="post" class="needs-validation" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="vorname" class="form-label">Vorname:</label>
+                                        <input type="text" class="form-control" id="vorname" th:field="*{vorname}" data-cy="registration-vorname" required>
+                                        <div class="invalid-feedback">
+                                            Bitte geben Sie Ihren Vornamen ein.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nachname" class="form-label">Nachname:</label>
+                                        <input type="text" class="form-control" id="nachname" th:field="*{nachname}" data-cy="registration-nachname" required>
+                                        <div class="invalid-feedback">
+                                            Bitte geben Sie Ihren Nachnamen ein.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-Mail:</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" data-cy="registration-email" required>
+                                    <div class="invalid-feedback">
+                                        Bitte geben Sie eine gültige E-Mail-Adresse ein.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="matrikelnummer" class="form-label">Matrikelnummer:</label>
+                                    <input type="text" class="form-control" id="matrikelnummer" th:field="*{matrikelnummer}" 
+                                           data-cy="registration-matrikelnummer" required pattern="[0-9]{7}" title="Die Matrikelnummer besteht aus 7 Ziffern">
+                                    <div class="invalid-feedback">
+                                        Bitte geben Sie eine gültige Matrikelnummer ein (7 Ziffern).
+                                    </div>
+                                    <small class="form-text text-muted">Die Matrikelnummer wird zur Überprüfung Ihrer Kursbelegung benötigt. Sie können sich nur registrieren, wenn Ihr Kursbetreuer Ihre Matrikelnummer bereits im System angelegt hat.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="passwort" class="form-label">Passwort:</label>
+                                    <input type="password" class="form-control" id="passwort" name="passwort" 
+                                           data-cy="registration-passwort" required minlength="8">
+                                    <div class="invalid-feedback">
+                                        Das Passwort muss mindestens 8 Zeichen lang sein.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="passwortBestaetigung" class="form-label">Passwort bestätigen:</label>
+                                    <input type="password" class="form-control" id="passwortBestaetigung" name="passwortBestaetigung" data-cy="registration-passwort-bestaetigung" required minlength="8">
+                                    <div class="invalid-feedback">
+                                        Die Passwörter stimmen nicht überein.
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" data-cy="registration-submit">Registrieren</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer text-center">
+                            <small class="text-muted">
+                                Bereits registriert? <a th:href="@{/login}" class="link-primary">Zum Login</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <script>
+    // Formularvalidierung aktivieren
+    (function() {
+      'use strict';
+      window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+          form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      }, false);
+    })();
+    </script>
+</body>
+</html>

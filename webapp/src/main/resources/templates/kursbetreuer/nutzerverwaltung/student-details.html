@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${student.displayName})}">
+    <title>Student Details - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                    <li class="breadcrumb-item active" th:text="${student.displayName}">Student Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <!-- Globale Erfolgs- und Fehlermeldungen (für alles außer Belegungen) -->
+            <div th:if="${successMessage != null && !successMessage.contains('Belegung')}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+            </div>
+            <div th:if="${errorMessage != null && !errorMessage.contains('Belegung')}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+            </div>
+            
+            <!-- Hinweis für nicht registrierte Studenten -->
+            <div th:if="${!student.istRegistriert && !belegungen.empty}" class="alert alert-info" role="alert">
+                <h4 class="alert-heading"><i class="bi bi-info-circle"></i> Nicht registrierter Student</h4>
+                <p>Dieser Student hat bereits Kursbelegungen, hat sich aber noch nicht im System registriert.
+                   Die Bearbeitung der Stammdaten ist erst nach der Registrierung durch den Studenten möglich.</p>
+                <hr>
+                <p class="mb-0">Der Student muss sich erst mit seiner E-Mail-Adresse und Matrikelnummer registrieren, 
+                   um seine persönlichen Daten anzulegen und das System nutzen zu können.</p>
+            </div>
+
+            <!-- Student Header -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">
+                        <span th:if="${student.vorname != null and student.nachname != null}" 
+                            th:text="${student.vorname + ' ' + student.nachname}">Max Mustermann</span>
+                        <span th:if="${student.vorname == null or student.nachname == null}" 
+                            th:text="'Nicht registrierter Student (Matrikelnr: ' + ${student.matrikelnummer} + ')'">Nicht registrierter Student</span>
+                    </h1>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="me-3" th:text="'Matrikelnummer: ' + ${student.matrikelnummer}">Matrikelnummer: 12345678</span>
+                        <span th:if="${student.istRegistriert}" class="badge bg-success me-2">Registriert</span>
+                        <span th:unless="${student.istRegistriert}" class="badge bg-warning text-dark me-2">Nicht registriert</span>
+                    </div>
+                    <p th:if="${student.email != null}" th:text="'E-Mail: ' + ${student.email}">E-Mail: max.mustermann@example.com</p>
+                </div>
+                <div class="col-md-auto">
+                    <div class="btn-group" role="group">
+                        <!-- Bearbeiten-Button nur anzeigen, wenn Student registriert ist -->
+                        <a th:if="${student.istRegistriert}" 
+                           th:href="@{/kursbetreuer/nutzer/student/edit/{id}(id=${student.id})}" 
+                           class="btn btn-primary" data-cy="edit-student-button">
+                            <i class="bi bi-pencil me-1"></i> Bearbeiten
+                        </a>
+                        <!-- Passwort-Reset-Button nur anzeigen, wenn Student registriert ist -->
+                        <button th:if="${student.istRegistriert}" 
+                                type="button" class="btn btn-warning" 
+                                data-bs-toggle="modal" data-bs-target="#passwordResetModal"
+                                th:data-nutzer-id="${student.id}"
+                                th:data-nutzer-name="${student.vorname != null and student.nachname != null ? 
+                                                    student.vorname + ' ' + student.nachname : 'Student ' + student.id}">
+                            <i class="bi bi-key me-1"></i> Passwort zurücksetzen
+                        </button>
+                        <a th:href="@{/kursbetreuer/nutzer/student/{id}/loeschen(id=${student.id})}" 
+                           class="btn btn-danger" data-cy="delete-student-button">
+                            <i class="bi bi-trash me-1"></i> Löschen
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aktive Belegungen -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">Kursbelegungen</h2>
+                            <a th:href="@{/kursbetreuer/nutzer/student/{id}/belegung/add(id=${student.id})}" 
+                               class="btn btn-sm btn-light" data-cy="belegung-hinzufuegen-button">
+                                <i class="bi bi-plus-circle"></i> Kurs belegen
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <!-- Erfolgs- und Fehlermeldungen für Belegungen -->
+                            <div th:if="${successMessage != null && successMessage.contains('Belegung')}" class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span th:text="${successMessage}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+                            </div>
+                            <div th:if="${errorMessage != null && errorMessage.contains('Belegung')}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                <span th:text="${errorMessage}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Kursname</th>
+                                            <th>Startdatum</th>
+                                            <th>Enddatum</th>
+                                            <th>Status</th>
+                                            <th>Aktionen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="belegung : ${belegungen}">
+                                            <td>
+                                                <a th:href="@{/kursbetreuer/fortschritt/student/{belegungId}(belegungId=${belegung.id})}" 
+                                                   th:text="${belegung.kursName}">Informatik 101</a>
+                                            </td>
+                                            <td th:text="${#temporals.format(belegung.startDatum, 'dd.MM.yyyy')}">01.10.2023</td>
+                                            <td th:text="${belegung.endDatum != null ? #temporals.format(belegung.endDatum, 'dd.MM.yyyy') : 'Unbegrenzt'}">31.03.2024</td>
+                                            <td>
+                                                <span th:if="${belegung.aktiv}" class="badge bg-success">Aktiv</span>
+                                                <span th:unless="${belegung.aktiv}" class="badge bg-danger">Inaktiv</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/kursbetreuer/belegungen/edit/{id}(id=${belegung.id}, returnTo='student')}" 
+                                                       class="btn btn-sm btn-primary" data-cy="belegung-edit-button">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger ms-1"
+                                                            onclick="deleteBelegung(this)"
+                                                            th:data-belegung-id="${belegung.id}"
+                                                            th:data-kurs-name="${belegung.kursName}"
+                                                            data-cy="belegung-loeschen-button">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${belegungen.empty}">
+                                            <td colspan="5" class="text-center">Keine Kursbelegungen vorhanden</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aktivitäten -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-container(${aktivitaeten}, 'Aktivitäten', false, ${student.id}, ${isKursbetreuer})}"></div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="row mb-4">
+                <div class="col">
+                    <a th:href="@{/kursbetreuer/nutzer}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Zurück zur Nutzerverwaltung
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal für das Zurücksetzen des Passworts -->
+    <div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordResetModalLabel">Passwort zurücksetzen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Möchten Sie das Passwort für <span id="resetPasswordNutzerName"></span> wirklich zurücksetzen?</p>
+                    <p>Ein neues zufälliges Passwort wird generiert und angezeigt.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <form id="resetPasswordForm" method="post" action="">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-warning">Passwort zurücksetzen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <script>
+        // JavaScript für die Modals
+        document.addEventListener('DOMContentLoaded', function() {
+            // Passwort zurücksetzen Modal
+            var passwordResetModal = document.getElementById('passwordResetModal');
+            if (passwordResetModal) {
+                passwordResetModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var nutzerId = button.getAttribute('data-nutzer-id');
+                    var nutzerName = button.getAttribute('data-nutzer-name');
+                    
+                    document.getElementById('resetPasswordNutzerName').textContent = nutzerName;
+                    document.getElementById('resetPasswordForm').action = '/kursbetreuer/nutzer/passwort/reset/' + nutzerId;
+                });
+            }
+        });
+
+        // Funktion zum Löschen einer Belegung mit einfachem Bestätigungsdialog
+        function deleteBelegung(button) {
+            var belegungId = button.getAttribute('data-belegung-id');
+            var kursName = button.getAttribute('data-kurs-name');
+            
+            if (!confirm('Möchten Sie die Belegung für den Kurs "' + kursName + '" wirklich löschen?')) {
+                return;
+            }
+            
+            // CSRF-Token aus dem versteckten Input-Feld des deleteBelegungForm holen
+            const csrfToken = document.querySelector("input[name='_csrf']").value;
+            
+            // Formular mit CSRF-Token erstellen
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/kursbetreuer/belegungen/delete/' + belegungId;
+            form.style.display = 'none';
+            
+            // CSRF-Token hinzufügen
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            // returnTo Parameter hinzufügen
+            const returnToInput = document.createElement('input');
+            returnToInput.type = 'hidden';
+            returnToInput.name = 'returnTo';
+            returnToInput.value = 'student';
+            form.appendChild(returnToInput);
+            
+            // Formular absenden
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>

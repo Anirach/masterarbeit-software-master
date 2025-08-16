@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Willkommen')}">
+    <title>Willkommen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Information</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8">
+                    <h1 class="display-4">LLM-Übungssystem</h1>
+                    <p class="lead">
+                        Willkommen beim LLM-Übungssystem des Lehrgebiets Kommunikationsnetze - einer experimentellen interaktiven Lernplattform
+                        für Übungsaufgaben und KI-gestützte Unterstützung im Lernprozess.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <img th:src="@{/images/knlogo.png}" alt="Lehrgebiet Kommunikationsnetze" class="img-fluid">
+                </div>
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body">
+                            <h2 class="card-title h4">Für Studierende</h2>
+                            <p class="card-text">
+                                Nutzen Sie das LLM-Übungssystem, um Ihre Kursinhalte zu üben und zu festigen. 
+                                Bekommen Sie sofortige Rückmeldungen zu Ihren Lösungen und stellen Sie Fragen 
+                                zu den Kursinhalten.
+                            </p>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Sofortige Bewertung Ihrer Lösungen</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Individuelles Feedback zur Verbesserung</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Fragen zu Kursinhalten stellen</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Fortschrittsverfolgung über den Kursverlauf</li>
+                            </ul>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/login}" class="btn btn-primary">Zur Anmeldung</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body">
+                            <h2 class="card-title h4">Für Kursbetreuer</h2>
+                            <p class="card-text">
+                                Verwalten Sie Ihre Kurse und Übungsaufgaben effizient. Laden Sie Kursmaterial hoch, 
+                                erstellen Sie Übungsaufgaben und verfolgen Sie den Lernfortschritt Ihrer Studierenden.
+                            </p>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Kurse und Kurseinheiten verwalten</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Wissensbasen mit Kursmaterial erstellen</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Übungsaufgaben erstellen und importieren</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Fortschritt der Studierenden verfolgen</li>
+                            </ul>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/kursbetreuer/login}" class="btn btn-primary">Zur Anmeldung</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="card-title h4">Über das Projekt</h2>
+                            <p class="card-text">
+                                Das LLM-Übungssystem ist eine Webanwendung zur Nutzung von Large Language Models für 
+                                den Übungs- und Korrekturprozess. Es wurde im Rahmen einer Masterarbeit an der 
+                                FernUniversität in Hagen entwickelt und soll den Lernprozess der Studierenden unterstützen.
+                            </p>
+                            <p class="card-text">
+                                Die Webanwendung ermöglicht es Studierenden, Inhalte eines Kurses zu üben und das 
+                                Gelernte zu festigen. Bearbeitete Übungen werden von einem KI-Modell bewertet und 
+                                korrigiert, außerdem kann das KI-Modell auf Rückfragen eingehen.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

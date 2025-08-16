@@ -1,0 +1,235 @@
+<!-- Thymeleaf Fragment für den Aufgabenbereich inkl. Form und Bewertung -->
+<div th:fragment="aufgaben-form" id="aufgabenFormContainer">
+    <!-- Teilaufgabenstellung -->
+    <div th:if="${aktiveTeilaufgabe != null}">
+        <h3 class="h5 mb-3" th:if="${aufgabe.teilaufgaben.size() > 1}">
+            Teilaufgabe <span th:text="${aktiveTeilaufgabe.reihenfolge}">1</span>
+        </h3>
+        
+        <form id="loesungsForm" th:hx-post="@{/student/aufgaben/htmx/bewerten}"
+              hx-trigger="submit" hx-target="#aufgabenFormContainer"
+              hx-indicator="#bewertungsSpinner" class="mb-3"
+              data-cy="solution-form">
+              
+            <input type="hidden" name="teilaufgabeId" th:value="${aktiveTeilaufgabe.id}" />
+            
+            <div class="aufgabenstellung-content p-3 border rounded bg-light" 
+                 th:utext="${teilaufgabeMarkdown.html}">
+                Teilaufgabenstellung wird hier angezeigt
+            </div>
+            
+            <div class="d-flex justify-content-end mt-4">
+                <!-- Bewerten-Button -->
+                <button type="submit" class="btn btn-primary" data-cy="evaluate-solution-button" id="evaluateButton">
+                    <span class="button-content">
+                        <i class="bi bi-lightning-charge"></i> Lösung bewerten
+                    </span>
+                    <span class="loading-content d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Bewerte...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Bewertungscontainer -->
+    <div id="bewertungsContainer" class="mt-4">
+        <!-- Bewertung wird hier angezeigt, wenn vorhanden -->
+        <div th:if="${bewertung != null}" class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title h5 mb-0">Deine Bewertung</h2>
+            </div>
+            <div class="card-body">
+                <!-- Punktestand -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Erreichte Punkte</h5>
+                    <span class="badge fs-5"
+                          th:classappend="${bewertung.punkte >= 70 ? 'bg-success' : (bewertung.punkte >= 50 ? 'bg-warning' : 'bg-danger')}"
+                          th:text="${bewertung.punkte} + ' / 100'"
+                          data-cy="score-badge">
+                        0 / 100
+                    </span>
+                </div>
+                
+                <!-- Fortschrittsbalken -->
+                <div class="progress mb-4" style="height: 15px;">
+                    <div class="progress-bar" role="progressbar" 
+                         th:style="'width: ' + ${bewertung.punkte} + '%'" 
+                         th:classappend="${bewertung.punkte >= 70 ? 'bg-success' : (bewertung.punkte >= 50 ? 'bg-warning' : 'bg-danger')}"
+                         th:attr="aria-valuenow=${bewertung.punkte}"
+                         aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                
+                <!-- Feedback-Text -->
+                <div class="feedback-container p-3 border rounded mb-4" 
+                     th:classappend="${bewertung.punkte >= 70 ? 'border-success bg-success bg-opacity-10' : (bewertung.punkte >= 50 ? 'border-warning bg-warning bg-opacity-10' : 'border-danger bg-danger bg-opacity-10')}"
+                     data-cy="feedback-container">
+                    <h6>Feedback</h6>
+                    <div th:utext="${bewertung.feedback}" class="mb-0 feedback-content" data-cy="feedback-text">Feedback wird hier angezeigt</div>
+                </div>
+                
+                <!-- Include action buttons for current evaluation -->
+                <div th:replace="~{student/aufgabe/fragments/aufgaben-form-fragment :: action-buttons(${bewertung.punkte}, ${loesungsVersuch})}"></div>
+            </div>
+        </div>
+        
+        <!-- Action buttons when no current evaluation but last attempt has sufficient points -->
+        <div th:if="${bewertung == null && letzterVersuch != null && letzterVersuch.bewertungPunkte != null && letzterVersuch.bewertungPunkte >= 50}" class="mt-4">
+            <div th:replace="~{student/aufgabe/fragments/aufgaben-form-fragment :: action-buttons(${letzterVersuch.bewertungPunkte}, ${letzterVersuch})}"></div>
+        </div>
+    </div>
+    
+    <!-- Inkludiere das Musterlösungs-Modal direkt im Fragment, wenn Musterlösung verfügbar ist -->
+    <!-- Das ist wichtig, damit das Modal bei HTMX-Updates mit im DOM ersetzt wird -->
+    <div th:if="${kannMusterloesungSehen && teilaufgabeMusterloesungMarkdown != null}" 
+         id="musterloesungenModal" class="modal fade" 
+         tabindex="-1" aria-labelledby="musterloesungenModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="musterloesungenModalLabel">Musterlösung</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Hinweis
+                        </h6>
+                        <p class="mb-0">
+                            Diese Musterlösung ist verfügbar, da du bereits mindestens 50% der Punkte erreicht hast.
+                            Nutze sie, um deine eigene Lösung zu verbessern und mehr über den Lösungsweg zu erfahren.
+                        </p>
+                    </div>
+                    
+                    <div th:if="${aktiveTeilaufgabe != null}">
+                        <h4 class="mb-3">Musterlösung für Teilaufgabe <span th:text="${aktiveTeilaufgabe.reihenfolge}">1</span></h4>
+
+                        <!-- Bewertungshinweise, falls vorhanden -->
+                        <div th:if="${aktiveTeilaufgabe.musterloesungBewertungshinweise != null && !aktiveTeilaufgabe.musterloesungBewertungshinweise.isBlank()}" class="mb-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info bg-opacity-75 text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>Erklärung zur Musterlösung
+                                    </h5>
+                                </div>
+                                <div class="card-body bg-info bg-opacity-10">
+                                    <div class="musterloesungs-hinweise" th:utext="${#strings.replace(#strings.escapeXml(aktiveTeilaufgabe.musterloesungBewertungshinweise), '&#10;', '<br />')}">
+                                        Bewertungshinweise werden hier angezeigt
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gerenderte Aufgabenstellung mit Musterlösungen -->
+                        <div class="musterloesungs-container">
+                            <h5 class="mb-3">Aufgabenstellung mit eingebetteten Lösungen</h5>
+                            <div class="aufgabenstellung-content p-4 border rounded bg-light shadow-sm"
+                                 th:utext="${teilaufgabeMusterloesungMarkdown.html}"
+                                 data-cy="solution-content">
+                                Aufgabenstellung mit Lösungen wird hier angezeigt
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fragment für Aktionsbuttons -->
+<div th:fragment="action-buttons(punkte, loesungsVersuch)" class="d-flex justify-content-between mt-4">
+    <div>
+        <!-- Zurücksetzen-Button -->
+        <form th:action="@{/student/aufgaben/htmx/zuruecksetzen}" method="post" class="d-inline">
+            <input type="hidden" name="teilaufgabeId" th:value="${aktiveTeilaufgabe.id}" />
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-outline-primary"
+                  onclick="return confirm('Möchtest du wirklich alle Eingaben zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.\n\nHinweis: Du kannst auch einfach deine Antworten ändern und erneut auf \'Lösung bewerten\' klicken.');">
+                <i class="bi bi-arrow-clockwise"></i> Aufgabe zurücksetzen
+            </button>
+        </form>
+
+        <!-- Teilaufgabe überspringen (nur wenn nicht genug Punkte für Abschluss) -->
+        <form th:if="${punkte < 50}"
+              th:action="@{/student/aufgaben/ueberspringen}" method="post" class="d-inline ms-2">
+            <input type="hidden" name="teilaufgabeId" th:value="${aktiveTeilaufgabe.id}" />
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-outline-warning"
+                  data-cy="skip-task-button"
+                  onclick="return confirm('Möchtest du diese Teilaufgabe wirklich überspringen?\n\nDu kannst später zurückkehren, um sie zu lösen. Überspringen erlaubt dir, mit der nächsten Teilaufgabe fortzufahren, ohne diese zu lösen.');">
+                <i class="bi bi-skip-forward"></i> Teilaufgabe überspringen
+            </button>
+        </form>
+
+        <!-- Erklärung anzeigen-Button (wenn Punkte unter 50%) -->
+        <a th:if="${punkte < 50}"
+           th:href="@{/student/chat/{teilaufgabeId}(isExplanation=true,teilaufgabeId=${aktiveTeilaufgabe.id})}"
+           class="btn btn-outline-danger ms-2 erlaeuterung-btn"
+           data-cy="explanation-button">
+            <i class="bi bi-question-circle"></i> Erläuterung anzeigen
+        </a>
+
+        <!-- Verbesserungsvorschläge anzeigen-Button (wenn Punkte zwischen 50-80%) -->
+        <button th:if="${punkte >= 50 && punkte < 80}"
+                type="button"
+                class="btn btn-outline-warning ms-2 feedback-btn"
+                th:attr="hx-get=@{/student/aufgaben/htmx/feedback(teilaufgabeId=${aktiveTeilaufgabe.id})}"
+                hx-target="#feedbackContainer"
+                data-bs-toggle="modal"
+                data-bs-target="#feedbackModal">
+            <i class="bi bi-arrow-up-circle"></i> Verbesserungsvorschläge
+        </button>
+
+        <!-- Musterlösung anzeigen-Button (nur wenn mind. 50% erreicht wurden) -->
+        <button th:if="${kannMusterloesungSehen}"
+                type="button"
+                class="btn btn-outline-info ms-2 musterloesungs-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#musterloesungenModal"
+                data-cy="show-solution-button">
+            <i class="bi bi-lightbulb"></i> Musterlösung anzeigen
+        </button>
+    </div>
+
+    <!-- Aufgabe als abgeschlossen markieren, wenn Punkte über 50 (Standard-Form ohne HTMX) -->
+    <form th:if="${punkte >= 50}" th:action="@{/student/aufgaben/abschliessen}" method="post" class="d-inline">
+        <input type="hidden" name="loesungsversuchId" th:value="${loesungsVersuch.id}" />
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i> Als abgeschlossen markieren
+        </button>
+    </form>
+</div>
+
+<!-- Script zum Highlighten der Eingabefelder gemäß der Bewertung -->
+<script th:fragment="aufgaben-form-script" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof fieldHighlightingInitialized === 'undefined') {
+            const feldBewertungen = /*[[${bewertung != null ? bewertung.felderBewertung : {}}]]*/ {};
+            
+            // Durchlaufe alle Bewertungen und färbe die Felder entsprechend ein
+            for (const [feldName, farbe] of Object.entries(feldBewertungen)) {
+                const inputField = document.querySelector(`[name="${feldName}"]`);
+                if (inputField) {
+                    // Entferne bestehende Highlight-Klassen
+                    inputField.classList.remove('field-highlight-red', 'field-highlight-yellow', 'field-highlight-green');
+                    
+                    // Füge passende Highlight-Klasse hinzu
+                    inputField.classList.add(`field-highlight-${farbe}`);
+                    
+                    // Setze auch das Wrapper-Element, falls vorhanden
+                    const wrapper = document.getElementById(`field-${feldName}-wrapper`);
+                    if (wrapper) {
+                        wrapper.className = `field-highlight-${farbe}`;
+                    }
+                }
+            }
+
+            window.fieldHighlightingInitialized = true;
+        }
+    });
+</script>

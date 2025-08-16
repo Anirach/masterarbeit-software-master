@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${kurs.name})}">
+    <title>Kursdetails - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/student/dashboard}">Meine Kurse</a></li>
+                    <li class="breadcrumb-item active" th:text="${kurs.name}">Kursname</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5" th:text="${kurs.name}">Kursname</h1>
+                    <p class="lead">Hier finden Sie alle Kurseinheiten und Aufgaben für diesen Kurs.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Kurs-Fortschritt -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Mein Fortschritt</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Gesamtfortschritt</h5>
+                                <span class="text-muted" th:text="${fortschritt.fortschrittProzent} + '%'">0%</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     th:style="'width: ' + ${fortschritt.fortschrittProzent} + '%'" 
+                                     th:attr="aria-valuenow=${fortschritt.fortschrittProzent}"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="text-muted" th:if="${fortschritt.gesamtTeilaufgaben > 0}" 
+                               th:text="${fortschritt.abgeschlosseneTeilaufgaben} + ' von ' + ${fortschritt.gesamtTeilaufgaben} + ' Aufgaben gelöst'">
+                                0 von 0 Aufgaben gelöst
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kurseinheiten mit Tree View für Materialien und Aufgaben -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Kurseinheiten</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Wenn keine Kurseinheiten vorhanden sind -->
+                            <div th:if="${kurs.kurseinheiten == null || kurs.kurseinheiten.isEmpty()}" class="p-4 text-center">
+                                <p class="text-muted">Dieser Kurs enthält noch keine Kurseinheiten.</p>
+                            </div>
+                            
+                            <!-- Kurseinheiten mit Aufgaben -->
+                            <div th:if="${kurs.kurseinheiten != null && !kurs.kurseinheiten.isEmpty()}" class="material-tree">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item border-0 p-0" th:each="kurseinheit : ${kurs.kurseinheiten}">
+                                        <div class="p-3 border-bottom">
+                                            <div class="d-flex align-items-center" data-bs-toggle="collapse" 
+                                                 th:attr="data-bs-target='#kurseinheit-content-' + ${kurseinheit.id}, aria-expanded=${expandedKurseinheiten.contains(kurseinheit.id) ? 'true' : 'false'}" 
+                                                 role="button">
+                                                <i class="bi bi-folder me-2 text-warning"></i>
+                                                <span th:text="${kurseinheit.reihenfolge + '. ' + kurseinheit.name}">Kurseinheit</span>
+                                                <i class="ms-2 collapse-icon" 
+                                                   th:classappend="${expandedKurseinheiten.contains(kurseinheit.id) ? 'bi-chevron-up' : 'bi-chevron-down'}"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Inhalt der Kurseinheit (Aufgaben + Materialien) -->
+                                        <div th:classappend="${expandedKurseinheiten.contains(kurseinheit.id) ? 'collapse show' : 'collapse'}" 
+                                             th:id="'kurseinheit-content-' + ${kurseinheit.id}">
+                                            <div class="p-3 bg-light">
+                                                <!-- Aufgaben der Kurseinheit -->
+                                                <h6 class="mb-3">Aufgaben</h6>
+
+                                                <!-- Wenn keine Aufgaben vorhanden sind -->
+                                                <div th:if="${aufgabenFortschritteProKurseinheit.get(kurseinheit.id) == null || aufgabenFortschritteProKurseinheit.get(kurseinheit.id).isEmpty()}" class="p-2 text-center">
+                                                    <p class="text-muted">Dieser Kurseinheit sind noch keine Aufgaben zugeordnet.</p>
+                                                </div>
+
+                                                <!-- Liste der Aufgaben -->
+                                                <ul class="list-group mb-4" th:if="${aufgabenFortschritteProKurseinheit.get(kurseinheit.id) != null && !aufgabenFortschritteProKurseinheit.get(kurseinheit.id).isEmpty()}">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        th:each="fortschritt : ${aufgabenFortschritteProKurseinheit.get(kurseinheit.id)}"
+                                                        th:classappend="${!fortschritt.freigeschaltet} ? 'bg-light' : ''"
+                                                        data-cy="assignment-item">
+                                                        <div class="d-flex flex-column">
+                                                            <div class="d-flex align-items-center">
+                                                                <!-- Status-Icon: abgeschlossen, zugänglich oder gesperrt -->
+                                                                <i class="bi me-2"
+                                                                   th:classappend="${fortschritt.abgeschlosseneTeilaufgaben == fortschritt.aufgabe.teilaufgaben.size() && fortschritt.aufgabe.teilaufgaben.size() > 0} ? 'bi-check-circle-fill text-success'
+                                                                     : (${fortschritt.freigeschaltet} ? 'bi-circle text-muted' : 'bi-lock-fill text-secondary')"></i>
+                                                                <span th:text="${fortschritt.aufgabe.titel}" th:classappend="${!fortschritt.freigeschaltet} ? 'text-muted' : ''" th:attr="data-cy-assignment-title=${fortschritt.aufgabe.titel}">Aufgabe</span>
+                                                            </div>
+
+                                                            <!-- Teilaufgaben Progress Bar -->
+                                                            <th:block th:if="${fortschritt.freigeschaltet}">
+                                                                <div class="mt-2" style="width: 200px;">
+                                                                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                                                                        <span th:text="${fortschritt.abgeschlosseneTeilaufgaben} + '/' + ${fortschritt.aufgabe.teilaufgaben.size()} + ' Teilaufgaben'">0/0 Teilaufgaben</span>
+                                                                        <span th:text="'Ø ' + ${fortschritt.durchschnittlichePunktzahl} + ' Punkte'">0 Punkte</span>
+                                                                    </div>
+                                                                    <div class="progress progress-thin">
+                                                                        <div class="progress-bar" role="progressbar"
+                                                                             th:classappend="${fortschritt.durchschnittlichePunktzahl >= 70 ? 'bg-success' : (fortschritt.durchschnittlichePunktzahl >= 50 ? 'bg-warning' : 'bg-danger')}"
+                                                                             th:style="'width: ' + ${fortschritt.durchschnittlichePunktzahl} + '%'"
+                                                                             th:attr="aria-valuenow=${fortschritt.durchschnittlichePunktzahl}"
+                                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </th:block>
+                                                        </div>
+
+                                                        <!-- Buttons: Gesperrt, Wiederholen oder Starten -->
+                                                        <div>
+                                                            <!-- Wenn Aufgabe gesperrt ist -->
+                                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                title="Du musst zuerst alle vorherigen Aufgaben abschließen, um diese Aufgabe freizuschalten.">
+                                                                <button th:if="${!fortschritt.freigeschaltet}"
+                                                                    class="btn btn-sm btn-outline-secondary" disabled>
+                                                                    <i class="bi bi-lock-fill me-1"></i> Gesperrt
+                                                                </button>
+                                                            </span>
+
+                                                            <!-- Wenn Aufgabe zugänglich ist -->
+                                                            <a th:if="${fortschritt.freigeschaltet}"
+                                                               th:href="@{/student/aufgaben/{id}(id=${fortschritt.aufgabe.id})}"
+                                                               class="btn btn-sm btn-primary"
+                                                               data-cy="start-assignment-button">
+                                                                <span th:if="${fortschritt.abgeschlosseneTeilaufgaben == fortschritt.aufgabe.teilaufgaben.size() && fortschritt.aufgabe.teilaufgaben.size() > 0}">Wiederholen</span>
+                                                                <span th:unless="${fortschritt.abgeschlosseneTeilaufgaben == fortschritt.aufgabe.teilaufgaben.size() && fortschritt.aufgabe.teilaufgaben.size() > 0}">Starten</span>
+                                                            </a>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <!-- Zurück-Button und Kurs-Reset -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <a th:href="@{/student/dashboard}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Zurück zur Kursübersicht
+                    </a>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a th:href="@{/student/kurs/{id}/reset(id=${kurs.id})}" 
+                       class="btn btn-outline-warning" 
+                       data-cy="reset-course-button">
+                        <i class="bi bi-arrow-clockwise"></i> Kurs zurücksetzen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips - bootstrap 5 way
+            var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl, {
+                    trigger: 'hover'  // Trigger on hover
+                });
+            });
+
+            // Custom event handling for bootstrap collapse elements
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(button) {
+                // Get target element
+                const targetId = button.getAttribute('data-bs-target');
+                const targetElement = document.querySelector(targetId);
+
+                // Create a new bootstrap collapse instance
+                const bsCollapse = new bootstrap.Collapse(targetElement, {
+                    toggle: false // Don't toggle on initialization
+                });
+
+                // Add click event listener
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (targetElement.classList.contains('show')) {
+                        bsCollapse.hide();
+                        if (button.querySelector('.collapse-icon')) {
+                            button.querySelector('.collapse-icon').classList.remove('bi-chevron-up');
+                            button.querySelector('.collapse-icon').classList.add('bi-chevron-down');
+                        }
+                    } else {
+                        bsCollapse.show();
+                        if (button.querySelector('.collapse-icon')) {
+                            button.querySelector('.collapse-icon').classList.remove('bi-chevron-down');
+                            button.querySelector('.collapse-icon').classList.add('bi-chevron-up');
+                        }
+                    }
+                });
+            });
+
+            // Course units expansion is now controlled from the backend via expandedKurseinheiten
+        });
+    </script>
+    
+    <style>
+        .material-tree .list-group-item {
+            border-left: none;
+            border-right: none;
+        }
+        .collapse-icon {
+            transition: transform 0.3s;
+        }
+        [data-bs-toggle="collapse"] {
+            cursor: pointer;
+        }
+        [aria-expanded="true"] .collapse-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Styles for locked assignments */
+        .list-group-item.bg-light {
+            opacity: 0.9;
+        }
+        /* Hover effect for the tooltip question mark */
+        button[disabled][data-bs-toggle="tooltip"] {
+            cursor: help;
+        }
+    </style>
+</body>
+</html>

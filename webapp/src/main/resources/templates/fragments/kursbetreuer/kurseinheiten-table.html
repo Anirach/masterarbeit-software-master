@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragment für die Kurseinheiten-Tabelle mit Drag & Drop Funktionalität -->
+    <div th:fragment="kurseinheiten-table" class="table-responsive" id="kurseinheiten-table">
+        <style>
+            .sortable-ghost {
+                background-color: #f8f9fa;
+                opacity: 0.7;
+            }
+            .drag-handle {
+                cursor: grab;
+            }
+            .drag-handle:active {
+                cursor: grabbing;
+            }
+        </style>
+        
+        <div class="mb-3">
+            <div id="reorder-status" 
+                 hx-swap-oob="true"
+                 class="htmx-indicator spinner-border spinner-border-sm text-primary ms-2 d-none" 
+                 role="status">
+                <span class="visually-hidden">Wird aktualisiert...</span>
+            </div>
+        </div>
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Aufgaben</th>
+                    <th>Materialien</th>
+                    <th class="pe-4">Aktionen</th>
+                </tr>
+            </thead>
+            <tbody id="kurseinheiten-sortable">
+                <tr th:each="einheit : ${kurs.kurseinheiten}" 
+                    th:data-id="${einheit.id}"
+                    th:data-cy-kurseinheit="${einheit.name}"
+                    class="sortable-item">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-grip-vertical me-2 text-muted drag-handle"></i>
+                            <span th:text="${einheit.name}">Einführung</span>
+                        </div>
+                    </td>
+                    <td th:text="${einheit.aufgabenCount != null ? einheit.aufgabenCount : 0}">0</td>
+                    <td th:text="${einheit.kursMaterialien != null ? einheit.kursMaterialien.size() : 0}">3</td>
+                    <td class="pe-4">
+                        <div class="btn-group btn-group-sm">
+                            <a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${einheit.id})}" class="btn btn-sm btn-primary" data-cy="kurseinheit-ansehen-button" th:title="#{action.view}">
+                                <i class="bi bi-eye"></i> <span th:text="#{action.view}">Ansehen</span>
+                            </a>
+                            <a th:href="@{/kursbetreuer/kurseinheiten/{id}/loeschen(id=${einheit.id})}" class="btn btn-sm btn-danger" data-cy="kurseinheit-loeschen-button" th:title="#{action.delete}">
+                                <i class="bi bi-trash"></i> <span th:text="#{action.delete}">Löschen</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const kursId = /*[[${kurs.id}]]*/ '0';
+            initSortable();
+            
+            // Event-Listener für HTMX-Ereignisse hinzufügen
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                // Sortable neu initialisieren, wenn die Tabelle aktualisiert wurde
+                if (evt.target && evt.target.id === 'kurseinheiten-table') {
+                    initSortable();
+                }
+            });
+            
+            // HTMX Response-Handler für Fehler
+            document.body.addEventListener('htmx:responseError', function(evt) {
+                console.error('HTMX Fehler bei Reorder:', evt.detail.xhr.responseText);
+                // Spinner verstecken
+                const spinner = document.getElementById('reorder-status');
+                if (spinner) spinner.classList.add('d-none');
+                
+                // Optional: Hier könnte eine Fehlermeldung angezeigt werden
+                alert('Es ist ein Fehler beim Aktualisieren der Reihenfolge aufgetreten.');
+            });
+            
+            function initSortable() {
+                const sortableEl = document.getElementById('kurseinheiten-sortable');
+                if (!sortableEl) return;
+                
+                // Bestehende Sortable-Instanz zerstören, falls vorhanden
+                if (sortableEl._sortable) {
+                    sortableEl._sortable.destroy();
+                }
+                
+                // Neue Sortable-Instanz erstellen
+                const sortable = new Sortable(sortableEl, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    onStart: function() {
+                        // Optional: Visuelles Feedback beim Start des Drag-Vorgangs
+                    },
+                    onEnd: function(evt) {
+                        // Verhindern, dass die Funktion ausgeführt wird, wenn sich die Position nicht geändert hat
+                        if (evt.oldIndex === evt.newIndex) return;
+                        
+                        // Spinner anzeigen
+                        const spinner = document.getElementById('reorder-status');
+                        if (spinner) spinner.classList.remove('d-none');
+                        
+                        // IDs in neuer Reihenfolge sammeln und validieren
+                        const items = sortableEl.querySelectorAll('.sortable-item');
+                        const ids = Array.from(items)
+                            .map(item => {
+                                const id = parseInt(item.dataset.id);
+                                return isNaN(id) ? null : id;
+                            })
+                            .filter(id => id !== null);
+                        
+                        // Prüfen, ob wir gültige IDs haben
+                        if (ids.length === 0) {
+                            console.error('Keine gültigen IDs gefunden');
+                            if (spinner) spinner.classList.add('d-none');
+                            return;
+                        }
+                        
+                        // HTMX-Anfrage senden
+                        htmx.ajax('POST', `/kursbetreuer/htmx/kurse/${kursId}/kurseinheiten/reorder`, {
+                            target: '#kurseinheiten-table',
+                            swap: 'outerHTML',
+                            values: { ids: ids },
+                            indicator: '#reorder-status'
+                        });
+                    }
+                });
+                
+                // Sortable-Instanz im Element speichern, um sie später zerstören zu können
+                sortableEl._sortable = sortable;
+            }
+        });
+        </script>
+    </div>
+</body>
+</html>

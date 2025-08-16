@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="de">
+
+<head th:replace="~{fragments/layout :: head(${isNew} ? 'Neue Kurseinheit anlegen' : 'Kurseinheit bearbeiten')}">
+    <title>Kurseinheit bearbeiten - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurseinheit.kursId})}" th:text="${kursName}">Kursname</a></li>
+                <li class="breadcrumb-item" th:if="${!isNew}"><a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" th:text="${kurseinheit.name}">Kurseinheit</a></li>
+                <li class="breadcrumb-item active" th:text="${isNew} ? 'Neue Kurseinheit anlegen' : 'Kurseinheit bearbeiten'">Kurseinheit bearbeiten</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5" th:text="${isNew} ? 'Neue Kurseinheit anlegen' : 'Kurseinheit bearbeiten'">Kurseinheit bearbeiten</h1>
+                <p class="lead" th:if="${isNew}">Erstellen Sie eine neue Kurseinheit, der später Materialien und Aufgaben hinzugefügt werden können.</p>
+                <p class="lead" th:unless="${isNew}">Bearbeiten Sie die Details der Kurseinheit.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="card-title h5 mb-0" th:text="${isNew} ? 'Neue Kurseinheit' : 'Kurseinheit bearbeiten'">Kurseinheit bearbeiten</h2>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/kursbetreuer/kurseinheiten/speichern}" method="post" th:object="${kurseinheit}">
+                            <input type="hidden" th:field="*{id}" />
+                            <input type="hidden" th:field="*{kursId}" />
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name der Kurseinheit <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" th:field="*{name}" data-cy="kurseinheit-name-input" required>
+                                <div class="form-text">Geben Sie einen eindeutigen Namen für die Kurseinheit ein (z.B. "Kurseinheit 1: Einführung").</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                                    Bitte geben Sie einen gültigen Namen ein.
+                                </div>
+                            </div>
+                            
+                            <!-- Reihenfolge-Feld entfernt, da Drag & Drop verwendet wird -->
+                            <input type="hidden" th:field="*{reihenfolge}">
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:if="${isNew}" th:href="@{/kursbetreuer/kurse/{id}(id=${kurseinheit.kursId})}" class="btn btn-outline-secondary" data-cy="kurseinheit-abbrechen-button">Abbrechen</a>
+                                <a th:unless="${isNew}" th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" class="btn btn-outline-secondary" data-cy="kurseinheit-abbrechen-button">Abbrechen</a>
+                                <button type="submit" class="btn btn-primary" data-cy="kurseinheit-speichern-button">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="card-title h5 mb-0">Hinweise</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Nach dem Anlegen der Kurseinheit können Sie Materialien hochladen und Aufgaben hinzufügen.</p>
+                        <p class="small" th:if="${!isNew}">
+                            <strong>Hinweis:</strong> Die Reihenfolge der Kurseinheiten kann auf der Kursübersicht per Drag & Drop geändert werden.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

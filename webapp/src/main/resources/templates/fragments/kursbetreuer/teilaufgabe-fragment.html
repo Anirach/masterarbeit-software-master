@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+    Fragment für eine einzelne Teilaufgabe
+    Parameter:
+    - teilaufgabe: Die Teilaufgabe-Entität
+    - mode: 'view' oder 'edit' für verschiedene Darstellungsmodi
+    - teilaufgabenStat: Der aktuelle Status der Iteration (optional, für Index-Verwaltung)
+    -->
+    <div th:fragment="teilaufgabe-fragment(aufgabe, teilaufgabe, mode, teilaufgabenStat)"
+         class="teilaufgabe-container my-3"
+         th:id="'teilaufgabe-'+${teilaufgabe.id}">
+
+        
+        <!-- Ansichts-Modus -->
+        <div th:if="${mode == 'view'}" class="view-mode">
+            <div class="mb-4"
+                 th:unless="${aufgabe.isEinfach}">
+                <h5 th:text="${teilaufgabe.reihenfolge}">Teilaufgabe Titel</h5>
+            </div>
+
+            <div class="mb-4">
+                <h6 class="card-subtitle mb-2 text-muted">Aufgabenstellung</h6>
+                <div class="markdown-content border p-3 rounded bg-light"
+                     th:utext="${teilaufgabe.aufgabenstellungParsed}">
+                    Hier erscheint der geparste Markdown-Inhalt.
+                </div>
+            </div>
+
+            <div class="mb-4" th:if="${teilaufgabe.musterloesungFelder != null && !teilaufgabe.musterloesungFelder.isEmpty()}">
+                <h6 class="card-subtitle mb-2 text-muted">Musterlösung</h6>
+                <div class="musterloesungs-felder">
+                    <div th:each="entry : ${teilaufgabe.musterloesungFelder}" class="mb-3">
+                        <div class="fw-bold" th:text="${entry.key}">Feldname</div>
+                        <div class="border p-2 rounded" th:text="${entry.value}">Feldwert</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4" th:if="${teilaufgabe.musterloesungBewertungshinweise != null && !teilaufgabe.musterloesungBewertungshinweise.isEmpty()}">
+                <h6 class="card-subtitle mb-2 text-muted">Bewertungshinweise</h6>
+                <div class="border p-3 rounded" th:text="${teilaufgabe.musterloesungBewertungshinweise}">
+                    Hinweise zur Bewertung.
+                </div>
+            </div>
+        </div>
+
+        <!-- Bearbeitungs-Modus -->
+        <div th:if="${mode == 'edit'}" class="edit-mode">
+            <!-- Teilaufgabe-Felder (integriert in das Hauptformular) -->
+            <div class="teilaufgabe-fields"
+                 th:data-teilaufgabe-id="${teilaufgabe.id}" 
+                 th:data-teilaufgabe-index="${teilaufgabe.id != null ? teilaufgabe.id : (teilaufgabe.reihenfolge ?: 0)}">
+
+                <!-- Aufgabenstellung mit Markdown-Editor -->
+                <div class="mb-4">
+                    <label th:for="'teilaufgabe-aufgabenstellung-' + ${teilaufgabe.id}" class="form-label">Aufgabenstellung</label>
+                    <span class="form-text d-block mb-2">
+                        Hier können Sie die Aufgabenstellung mit Markdown formatieren. Eingabefelder können über das <i class="bi bi-input-cursor-text"></i>-Icon eingefügt werden.
+                    </span>
+
+                    <!-- Markdown-Editor-Komponente einbinden -->
+                    <div th:replace="~{fragments/components/markdown-editor :: markdown-editor(
+                                textareaId='teilaufgabe-aufgabenstellung-' + ${teilaufgabe.id},
+                                content=${teilaufgabe.aufgabenstellungMarkdown},
+                                previewId='teilaufgabe-vorschau-' + ${teilaufgabe.id},
+                                teilaufgabeId=${teilaufgabe.id},
+                                isAllgemein=false
+                            )}">
+                    </div>
+                </div>
+
+                <!-- Container für extrahierte Felder (für die Musterlösung) -->
+                <div class="mb-4">
+                    <label class="form-label">Musterlösung</label>
+                    <span class="form-text d-block mb-2">
+                        Hier können Sie Musterlösungen für die extrahierten Eingabefelder definieren.
+                    </span>
+
+                    <div class="musterloesungs-felder border p-3 rounded" 
+                         data-cy="musterloesungs-container"
+                         th:id="'teilaufgabe-musterloesung-'+${teilaufgabe.id}">
+                        <!-- Hier werden dynamisch die extrahierten Felder angezeigt -->
+                        <div class="text-center py-2" id="musterloesungs-placeholder" data-cy="musterloesungs-placeholder">
+                            <span class="text-muted">Die Felder werden automatisch aus der Aufgabenstellung extrahiert.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bewertungshinweise -->
+                <div class="mb-4">
+                    <label th:for="'teilaufgabe-bewertungshinweise-' + ${teilaufgabe.id}" class="form-label">Bewertungshinweise</label>
+                    <span class="form-text d-block mb-2">
+                        Hier können Sie Hinweise zur Bewertung der Aufgabe hinzufügen (optional).
+                    </span>
+                    <textarea class="form-control auto-resize"
+                              th:id="'teilaufgabe-bewertungshinweise-' + ${teilaufgabe.id}"
+                              th:name="'teilaufgaben[' + ${teilaufgabenStat.index} + '].musterloesungBewertungshinweise'"
+                              rows="3"
+                              data-cy="teilaufgabe-bewertungshinweise"
+                              th:text="${teilaufgabe.musterloesungBewertungshinweise}"></textarea>
+                </div>
+                
+                <!-- Prompt-Vorschau Button und Container -->
+                <div class="mb-4" th:if="${teilaufgabe.id != null}">
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="form-label mb-0 me-2">LLM-Prompt Vorschau</label>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-primary prompt-preview-btn"
+                                th:attr="data-aufgabe-id=${aufgabe.id},data-teilaufgabe-id=${teilaufgabe.id}"
+                                th:id="'prompt-preview-btn-' + ${teilaufgabe.id}"
+                                th:hx-post="@{/kursbetreuer/htmx/prompt-preview/{aufgabeId}/{teilaufgabeId}(aufgabeId=${aufgabe.id},teilaufgabeId=${teilaufgabe.id})}"
+                                th:hx-target="'#prompt-preview-container-' + ${teilaufgabe.id}"
+                                hx-include="form"
+                                hx-trigger="click"
+                                hx-swap="innerHTML">
+                            <i class="bi bi-eye"></i> Prompt anzeigen
+                        </button>
+                    </div>
+                    <div class="mb-2 text-muted small">
+                        Zeigt den Prompt an, der zur Bewertung der Aufgabe mit dem LLM verwendet wird.
+                    </div>
+                    <div th:id="'prompt-preview-container-' + ${teilaufgabe.id}" class="prompt-preview-container"></div>
+                </div>
+
+                <!-- Löschen-Button bleibt für die Teilaufgabe -->
+                <div class="text-end">
+                    <button type="button" class="btn btn-sm btn-danger teilaufgabe-delete-btn"
+                            th:hx-delete="@{/kursbetreuer/htmx/aufgabe/remove-teilaufgabe(id=${teilaufgabe.id})}"
+                            hx-target="#form-aufgabe"
+                            hx-include="form"
+                            hx-swap="outerHTML"
+                            data-cy="teilaufgabe-delete-button"
+                            hx-confirm th:attr="hx-confirm=#{confirm.delete.assignment}">
+                        <i class="bi bi-trash"></i> <span th:text="#{action.delete}">Löschen</span>
+                    </button>
+                </div>
+
+                <!-- Versteckte Felder für die Musterlösungs-Felder (ein Feld pro Map-Eintrag) -->
+                <div id="hidden-musterloesungs-felder-container">
+                    <!-- Container für die versteckten Felder -->
+                    <div th:if="${teilaufgabe.musterloesungFelder != null && !teilaufgabe.musterloesungFelder.isEmpty()}"
+                         th:each="entry : ${teilaufgabe.musterloesungFelder}">
+                        <input type="hidden" 
+                               th:id="'teilaufgabe-musterloesungs-feld-' + ${teilaufgabe.id} + '-' + ${entry.key}"
+                               th:name="'teilaufgaben[' + ${teilaufgabenStat.index} + '].musterloesungFelder[' + ${entry.key} + ']'"
+                               th:value="${entry.value}">
+                    </div>
+                </div>
+                <input type="hidden" th:name="'teilaufgaben[' + ${teilaufgabenStat.index} + '].id'" 
+                       th:value="${teilaufgabe.id}">
+                <input type="hidden" th:name="'teilaufgaben[' + ${teilaufgabenStat.index} + '].aufgabeId'" 
+                       th:value="${aufgabe.id}">
+                <input type="hidden" th:name="'teilaufgaben[' + ${teilaufgabenStat.index} + '].reihenfolge'" 
+                       th:value="${teilaufgabe.reihenfolge != null ? teilaufgabe.reihenfolge : teilaufgabenStat.count}">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script-Fragment für die Teilaufgabe-Funktionalität -->
+    <script th:fragment="teilaufgabe-script">
+        document.addEventListener('DOMContentLoaded', function() {
+
+            
+            // Extrahierte Felder aktualisieren nach HTMX-Swaps
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                // Wenn es sich um eine Teilaufgabe handelt
+                if (evt.target && evt.target.tagName && evt.target.tagName === 'FORM') {
+                    updateTeilaufgabeUIElements();
+                }
+            });
+
+            
+            // Funktion zum Aktualisieren der UI-Elemente in Teilaufgaben
+            function updateTeilaufgabeUIElements() {
+                // Zählen der aktuellen Teilaufgaben im DOM
+                const teilaufgabenContainers = document.querySelectorAll('.teilaufgabe-container');
+                const teilaufgabenCount = teilaufgabenContainers.length;
+                
+                // UI-Elemente in den Teilaufgaben aktualisieren
+                
+                // Titel-Felder ein-/ausblenden
+                document.querySelectorAll('.teilaufgabe-titel-field').forEach(titleField => {
+                    if (teilaufgabenCount > 1) {
+                        titleField.style.display = 'block';
+                    } else {
+                        titleField.style.display = 'none';
+                    }
+                });
+                
+                // Löschen-Buttons ein-/ausblenden
+                document.querySelectorAll('.teilaufgabe-delete-btn').forEach(deleteBtn => {
+                    if (teilaufgabenCount > 1) {
+                        deleteBtn.style.display = 'inline-block';
+                    } else {
+                        deleteBtn.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Initial aufrufen
+            updateTeilaufgabeUIElements();
+            
+            // Event-Listener für das HTMX-Event "afterSettle" hinzufügen
+            document.body.addEventListener('htmx:afterSettle', function(evt) {
+                updateTeilaufgabeUIElements();
+            });
+        });
+    </script>
+</body>
+</html>

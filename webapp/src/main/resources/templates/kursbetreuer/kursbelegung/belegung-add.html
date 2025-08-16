@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Student zu Kurs hinzufügen')}">
+    <title>Student zu Kurs hinzufügen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${kurs.id})}">Belegungen</a></li>
+                    <li class="breadcrumb-item active">Student hinzufügen</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Student zu Kurs hinzufügen</h1>
+                    <p class="lead">Wählen Sie einen Studenten aus, der noch nicht für diesen Kurs angemeldet ist, und legen Sie den Belegungszeitraum fest.</p>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Student zu Kurs hinzufügen: <span th:text="${kurs.name}"></span></h2>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/kursbetreuer/belegungen/add/{kursId}(kursId=${kurs.id})}" method="post">
+                                <!-- Auswahl zwischen Student-Dropdown, Matrikelnummer-Eingabe und Masseneingabe -->
+                                <ul class="nav nav-tabs mb-3" id="studentInputTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="existing-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#existing-student" type="button" role="tab" 
+                                                aria-controls="existing-student" aria-selected="true">
+                                            Existierenden Studenten auswählen
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="matrikelnummer-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#matrikelnummer-input" type="button" role="tab" 
+                                                aria-controls="matrikelnummer-input" aria-selected="false">
+                                            Matrikelnummer eingeben
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="mass-add-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#mass-add-input" type="button" role="tab" 
+                                                aria-controls="mass-add-input" aria-selected="false">
+                                            Mehrere Matrikelnummern hinzufügen
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="studentInputTabsContent">
+                                    <!-- Tab für existierende Studenten -->
+                                    <div class="tab-pane fade show active" id="existing-student" role="tabpanel" 
+                                         aria-labelledby="existing-tab">
+                                        <div class="mb-3">
+                                            <label for="studentId" class="form-label">Student</label>
+                                            <select id="studentId" name="studentId" class="form-select" data-cy="student-select">
+                                                <option value="">-- Bitte wählen --</option>
+                                                <option th:each="student : ${availableStudents}"
+                                                        th:value="${student.id}"
+                                                        th:text="${student.displayName}">
+                                                </option>
+                                            </select>
+                                            <div th:if="${availableStudents.empty}" class="form-text text-danger">
+                                                Es sind keine Studenten verfügbar, die diesen Kurs noch nicht belegen.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tab für Matrikelnummer-Eingabe -->
+                                    <div class="tab-pane fade" id="matrikelnummer-input" role="tabpanel" 
+                                         aria-labelledby="matrikelnummer-tab">
+                                        <div class="mb-3">
+                                            <label for="matrikelnummer" class="form-label">Matrikelnummer</label>
+                                            <input type="text" id="matrikelnummer" name="matrikelnummer" class="form-control"
+                                                   placeholder="Matrikelnummer eingeben" data-cy="matrikelnummer-input">
+                                            <div class="form-text">
+                                                Falls der Student noch nicht registriert ist, wird ein vorläufiger Eintrag erstellt.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Neuer Tab für Masseneingabe von Matrikelnummern -->
+                                    <div class="tab-pane fade" id="mass-add-input" role="tabpanel" 
+                                         aria-labelledby="mass-add-tab">
+                                        <div class="mb-3">
+                                            <label for="matrikelnummernListe" class="form-label">Mehrere Matrikelnummern</label>
+                                            <textarea id="matrikelnummernListe" name="matrikelnummernListe" class="form-control" rows="5"
+                                                     placeholder="Matrikelnummern eingeben (kommasepariert oder eine pro Zeile)" data-cy="matrikelnummern-liste-input"></textarea>
+                                            <div class="form-text">
+                                                Geben Sie mehrere Matrikelnummern ein, getrennt durch Kommas oder Zeilenumbrüche.<br>
+                                                Beispiel: 123456, 234567<br>
+                                                Oder:<br>
+                                                123456<br>
+                                                234567<br>
+                                                <br>
+                                                Falls Studenten noch nicht registriert sind, werden vorläufige Einträge erstellt.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- JavaScript zur Validierung, dass einer der drei Eingabetypen ausgefüllt ist -->
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // Elemente referenzieren
+                                        const form = document.querySelector('form');
+                                        const studentIdSelect = document.getElementById('studentId');
+                                        const matrikelnummerInput = document.getElementById('matrikelnummer');
+                                        const matrikelnummernListeInput = document.getElementById('matrikelnummernListe');
+                                        const existingTab = document.getElementById('existing-tab');
+                                        const matrikelnummerTab = document.getElementById('matrikelnummer-tab');
+                                        const massAddTab = document.getElementById('mass-add-tab');
+                                        
+                                        // Validierung beim Absenden des Formulars
+                                        form.addEventListener('submit', function(event) {
+                                            // Prüfen, welcher Tab aktiv ist
+                                            const isExistingTabActive = existingTab.classList.contains('active');
+                                            const isMatrikelnummerTabActive = matrikelnummerTab.classList.contains('active');
+                                            const isMassAddTabActive = massAddTab.classList.contains('active');
+                                            
+                                            if (isExistingTabActive) {
+                                                // Wenn der Tab für existierende Studenten aktiv ist
+                                                if (!studentIdSelect.value) {
+                                                    event.preventDefault();
+                                                    alert('Bitte wählen Sie einen Studenten aus.');
+                                                }
+                                                // Die anderen Felder leeren
+                                                matrikelnummerInput.value = '';
+                                                matrikelnummernListeInput.value = '';
+                                            } else if (isMatrikelnummerTabActive) {
+                                                // Wenn der Tab für Matrikelnummer aktiv ist
+                                                if (!matrikelnummerInput.value) {
+                                                    event.preventDefault();
+                                                    alert('Bitte geben Sie eine Matrikelnummer ein.');
+                                                }
+                                                // Die anderen Felder leeren
+                                                studentIdSelect.value = '';
+                                                matrikelnummernListeInput.value = '';
+                                            } else if (isMassAddTabActive) {
+                                                // Wenn der Tab für Masseneingabe aktiv ist
+                                                if (!matrikelnummernListeInput.value) {
+                                                    event.preventDefault();
+                                                    alert('Bitte geben Sie mindestens eine Matrikelnummer ein.');
+                                                }
+                                                // Die anderen Felder leeren
+                                                studentIdSelect.value = '';
+                                                matrikelnummerInput.value = '';
+                                            }
+                                        });
+                                    });
+                                </script>
+
+                                <!-- Zeitraum festlegen -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="startDatum" class="form-label">Startdatum</label>
+                                        <input type="date" id="startDatum" name="startDatum" class="form-control" 
+                                               th:value="${startDatum}" data-cy="belegung-start-datum" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDatum" class="form-label">Enddatum (optional)</label>
+                                        <input type="date" id="endDatum" name="endDatum" class="form-control" 
+                                               th:value="${endDatum}" data-cy="belegung-end-datum">
+                                        <div class="form-text">Leer lassen für unbegrenzte Belegung</div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit-Button -->
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/kursbetreuer/belegungen/kurs/{kursId}(kursId=${kurs.id})}" 
+                                       class="btn btn-secondary" data-cy="belegung-abbrechen-button">
+                                        <i class="bi bi-x-circle"></i> <span th:text="#{button.cancel}">Abbrechen</span>
+                                    </a>
+                                    <button type="submit" class="btn btn-success" data-cy="belegung-speichern-button">
+                                        <i class="bi bi-check-circle"></i> <span th:text="#{student.add}">Hinzufügen</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h3 class="card-title h5 mb-0">Hinweise</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Es werden nur Studenten angezeigt, die den Kurs noch nicht belegen.</li>
+                                <li>Das Startdatum gibt an, ab wann der Student Zugriff auf den Kurs hat.</li>
+                                <li>Ein Enddatum ist optional. Ohne Enddatum ist die Belegung zeitlich unbegrenzt.</li>
+                                <li>Studenten können nur auf Kurse zugreifen, für die sie eine aktive Belegung haben.</li>
+                                <li>Bei mehreren Matrikelnummern können Sie diese kommasepariert oder zeilenweise eingeben.</li>
+                                <li>Für noch nicht registrierte Studenten werden automatisch Dummy-Einträge erstellt.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <!-- Fragment für die Materialdarstellung einer einzelnen Kurseinheit -->
+    <div th:fragment="kurseinheit-material-list(kurseinheit)" class="kurseinheit-material-list">
+        <!-- Meldungen einbinden -->
+        <div th:if="${fragmentSuccessMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <span th:text="${fragmentSuccessMessage}">Erfolgsmeldung</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+        </div>
+        
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush material-tree">
+                <!-- Material-Ordner der Kurseinheit -->
+                <li class="list-group-item p-2 border-0">
+                    <div class="d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#einheitMaterial" role="button" aria-expanded="true">
+                        <i class="bi bi-folder2-open me-2 text-warning"></i>
+                        <span>Materialien zu "<span th:text="${kurseinheit.name}">Kurseinheit</span>"</span>
+                        <span class="badge bg-secondary rounded-pill ms-2" th:text="${kurseinheit.kursMaterialien != null ? kurseinheit.kursMaterialien.size() : 0}">0</span>
+                        <i class="bi bi-chevron-down ms-2 collapse-icon"></i>
+                    </div>
+                    
+                    <!-- Liste der Kursmaterialien dieser Kurseinheit -->
+                    <div class="collapse show" id="einheitMaterial">
+                        <ul class="list-group list-group-flush ms-4 mt-2" th:if="${kurseinheit.kursMaterialien != null && !kurseinheit.kursMaterialien.isEmpty()}">
+                            <li class="list-group-item p-2 border-0 d-flex justify-content-between align-items-center" th:each="material : ${kurseinheit.kursMaterialien}">
+                                <div class="d-flex align-items-center">
+                                    <!-- Icon je nach Dokument-Typ -->
+                                    <i class="bi me-2" th:classappend="${
+                                        material.typ.name() == 'DOKUMENT' ?
+                                            (material.name.toLowerCase().endsWith('.pdf') ? 'bi-file-earmark-pdf text-danger' : 
+                                            material.name.toLowerCase().endsWith('.docx') ? 'bi-file-earmark-word text-primary' : 
+                                            material.name.toLowerCase().endsWith('.xlsx') ? 'bi-file-earmark-excel text-success' : 
+                                            material.name.toLowerCase().endsWith('.pptx') ? 'bi-file-earmark-ppt text-warning' : 
+                                            'bi-file-earmark-text text-secondary') : 
+                                        'bi-file-earmark-image text-info'
+                                    }"></i>
+                                    <span th:text="${material.name}">Dateiname</span>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{/kursbetreuer/material/{id}/download(id=${material.id})}" class="btn btn-outline-primary btn-sm" title="Material herunterladen" data-cy="material-download-button">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <!-- Löschbutton mit direkter HTMX-Anbindung und Bestätigungsdialog -->
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            th:hx-delete="@{/kursbetreuer/htmx/kurseinheit-material/{id}(id=${material.id})}"
+                                            th:hx-confirm="${'Sind Sie sicher, dass Sie das Kursmaterial ' + material.name + ' löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'}"
+                                            hx-swap="outerHTML"
+                                            hx-target=".kurseinheit-material-list"
+                                            data-cy="material-loeschen-button">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="text-center p-3 bg-light rounded mt-2" th:if="${kurseinheit.kursMaterialien == null || kurseinheit.kursMaterialien.isEmpty()}">
+                            <p class="text-muted mb-0">Keine Materialien für diese Kurseinheit vorhanden</p>
+                            <a th:href="@{/kursbetreuer/kurseinheiten/{id}/material/neu(id=${kurseinheit.id})}" class="btn btn-sm btn-success mt-2" data-cy="kurseinheit-material-upload-button">
+                                <i class="bi bi-upload"></i> Material hochladen
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Upload-Button für neues Kursmaterial -->
+        <div class="text-end mt-3">
+            <a th:href="@{/kursbetreuer/kurseinheiten/{id}/material/neu(id=${kurseinheit.id})}"
+               class="btn btn-success" data-cy="neues-kursmaterial-button">
+                <i class="bi bi-upload"></i> Neues Kursmaterial hochladen
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

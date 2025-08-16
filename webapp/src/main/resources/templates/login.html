@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Login')}">
+    <title>Login - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Anmeldung</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <h2>Anmeldung</h2>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                                Ungültige E-Mail oder Passwort oder Ihr Konto ist noch nicht vollständig registriert
+                            </div>
+                            <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                                Sie wurden erfolgreich ausgeloggt
+                            </div>
+                            <div th:if="${param.registered}" class="alert alert-success" role="alert">
+                                Registrierung erfolgreich! Bitte loggen Sie sich ein.
+                            </div>
+                            
+                            <form th:action="@{/login}" method="post" class="needs-validation" novalidate>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">E-Mail:</label>
+                                    <input type="email" class="form-control" id="username" name="username" data-cy="login-email" required>
+                                    <div class="invalid-feedback">
+                                        Bitte geben Sie Ihre E-Mail-Adresse ein.
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Passwort:</label>
+                                    <input type="password" class="form-control" id="password" name="password" data-cy="login-password" required>
+                                    <div class="invalid-feedback">
+                                        Bitte geben Sie Ihr Passwort ein.
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" data-cy="login-submit">Login</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer text-center">
+                            <small class="text-muted">
+                                Noch kein Konto?<br>
+                                <a th:href="@{/registration}" >Hier registrieren</a>
+                            </small>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <script>
+    // Formularvalidierung aktivieren
+    (function() {
+      'use strict';
+      window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+          form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      }, false);
+    })();
+    </script>
+</body>
+</html>

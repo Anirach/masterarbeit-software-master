@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+    Fragment für den einfachen Markdown-Editor mit Vorschau und Feldextraktion
+    Parameter:
+    - textareaId: ID für das Textarea-Element
+    - content: Inhalt des Markdown-Editors
+    - previewId: ID für das Vorschau-Element
+    - teilaufgabeId: ID der Teilaufgabe (optional, nur für Teilaufgaben)
+    - isAllgemein: Boolean, ob es sich um eine allgemeine Aufgabenstellung handelt
+    -->
+    <div th:fragment="markdown-editor(textareaId, content, previewId, teilaufgabeId, isAllgemein)" class="markdown-editor-container">
+        <!-- Tab Navigation für den Editor -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" 
+                        th:id="${textareaId} + '-tab-edit'" 
+                        data-bs-toggle="tab" 
+                        th:data-bs-target="'#' + ${textareaId} + '-panel'" 
+                        type="button" 
+                        role="tab" 
+                        aria-selected="true">
+                    <i class="bi bi-pencil-square"></i> Editor
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" 
+                        th:id="${textareaId} + '-tab-preview'" 
+                        data-bs-toggle="tab" 
+                        th:data-bs-target="'#' + ${previewId} + '-panel'" 
+                        type="button" 
+                        role="tab" 
+                        aria-selected="false">
+                    <i class="bi bi-eye"></i> Vorschau
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Inhalte -->
+        <div class="tab-content border border-top-0 rounded-bottom p-3">
+            <!-- Editor Tab -->
+            <div class="tab-pane fade show active" 
+                 th:id="${textareaId} + '-panel'" 
+                 role="tabpanel" 
+                 th:aria-labelledby="${textareaId} + '-tab-edit'">
+                <textarea class="form-control markdown-editor auto-resize" 
+                          th:id="${textareaId}" 
+                          th:name="${isAllgemein} ? 'aufgabenText' : 'teilaufgaben[__${teilaufgabenStat != null ? teilaufgabenStat.index : 0}__].aufgabenstellungMarkdown'"
+                          rows="10"
+                          th:text="${content}"
+                          th:data-teilaufgabe-id="${teilaufgabeId}"
+                          th:data-teilaufgabe-index="${teilaufgabenStat != null ? teilaufgabenStat.index : 0}"
+                          th:data-field-type="aufgabenstellungMarkdown"
+                          data-cy="markdown-editor-textarea"
+                          th:attrappend="data-allgemein-aufgabenstellung=${isAllgemein} ? 'true' : null"></textarea>
+                <!-- Platzhalter für Warnungen zu doppelten Feldnamen -->
+            </div>
+            
+            <!-- Preview Tab -->
+            <div class="tab-pane fade" 
+                 th:id="${previewId} + '-panel'" 
+                 role="tabpanel" 
+                 th:aria-labelledby="${textareaId} + '-tab-preview'">
+                <div class="border p-3 rounded bg-light markdown-preview" 
+                     th:id="${previewId}"></div>
+            </div>
+        </div>
+        
+        <!-- Hilfetext für Markdown-Syntax und Eingabefelder -->
+        <div class="markdown-help text-muted mt-2">
+            <small>
+                <p class="mb-1"><strong>Markdown-Syntax:</strong> 
+                    <code># Überschrift</code>, 
+                    <code>**fett**</code>, 
+                    <code>*kursiv*</code>, 
+                    <code>[Link](url)</code>, 
+                    <code>![Bild](url)</code>, 
+                    <code>1. Liste</code>, 
+                    <code>- Liste</code>
+                </p>
+                <p class="mb-0" th:if="${!isAllgemein}">
+                    <strong>Eingabefelder:</strong> 
+                    <code>{feldname:text:20}</code> (Textfeld), 
+                    <code>{feldname:num:5}</code> (Zahlenfeld), 
+                    <code>{feldname:tex:30}</code> (LaTeX-Formel),
+                    <code>{{{feldname}}}</code> (Mehrzeilig)
+                </p>
+            </small>
+        </div>
+    </div>
+
+    <!-- 
+    Fragment für den Inhalt des Bild-Auswahl-Modals
+    Parameter:
+    - kurseinheitId: ID der Kurseinheit
+    - images: Liste der verfügbaren Bilder
+    - editorId: ID des Editors, in den das Bild eingefügt werden soll
+    -->
+    <div th:fragment="image-selector-modal-content(kurseinheitId, images, editorId)" class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="imageSelectorModalLabel">Bild aus Materialien einfügen</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label for="imageAltText" class="form-label">Alternativer Text</label>
+                <input type="text" class="form-control" id="imageAltText" placeholder="Beschreibender Text für das Bild">
+                <div class="form-text">Dieser Text wird angezeigt, wenn das Bild nicht geladen werden kann oder für Screenreader</div>
+            </div>
+            <hr>
+            <div id="imageGrid" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <th:block th:if="${images.isEmpty()}">
+                    <div class="col-12">
+                        <div class="alert alert-info py-4 text-center">
+                            <i class="bi bi-exclamation-circle fs-3 d-block mb-3"></i>
+                            Es wurden keine Bilder gefunden. Bitte laden Sie zuerst Bilder für diesen Kurs oder diese Kurseinheit hoch.
+                        </div>
+                    </div>
+                </th:block>
+                <th:block th:unless="${images.isEmpty()}" th:each="image : ${images}">
+                    <div class="col image-item" th:data-source="${image.source}">
+                        <div class="card h-100 image-card" 
+                             th:data-image-name="${image.name}" 
+                             th:data-editor-id="${editorId}">
+                            <div class="card-img-container p-2 text-center">
+                                <img th:src="${image.thumbnailUrl}" class="card-img-top" th:alt="${image.name}" style="max-height: 120px; object-fit: contain;">
+                            </div>
+                            <div class="card-body p-2">
+                                <p class="card-text small text-truncate mb-0" th:text="${image.name}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a th:href="@{'/kursbetreuer/kurseinheiten/' + ${kurseinheitId} + '/material/neu'}" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-upload me-1"></i> Neues Bild hochladen
+            </a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        </div>
+    </div>
+</body>
+</html>

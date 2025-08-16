@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kursbetreuer erstellen')}">
+    <title>Kursbetreuer erstellen - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                <li class="breadcrumb-item active">Kursbetreuer erstellen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5">Neuen Kursbetreuer erstellen</h1>
+            </div>
+        </div>
+
+        <!-- Erfolgs- und Fehlermeldungen -->
+        <div th:replace="~{fragments/messages :: messages}"></div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form th:action="@{/kursbetreuer/nutzer/kursbetreuer/create}" method="post" 
+                              th:object="${kursbetreuer}" class="needs-validation" novalidate data-cy="kursbetreuer-create-form">
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-Mail-Adresse <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" 
+                                       required data-cy="kursbetreuer-email">
+                                <div class="invalid-feedback">Bitte geben Sie eine gültige E-Mail-Adresse ein.</div>
+                                <div class="error-message" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="vorname" class="form-label">Vorname <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vorname" th:field="*{vorname}" 
+                                       required data-cy="kursbetreuer-vorname">
+                                <div class="invalid-feedback">Bitte geben Sie einen Vornamen ein.</div>
+                                <div class="error-message" th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nachname" class="form-label">Nachname <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nachname" th:field="*{nachname}" 
+                                       required data-cy="kursbetreuer-nachname">
+                                <div class="invalid-feedback">Bitte geben Sie einen Nachnamen ein.</div>
+                                <div class="error-message" th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/kursbetreuer/nutzer}" 
+                                   class="btn btn-outline-secondary" data-cy="abbrechen-button">
+                                    Abbrechen
+                                </a>
+                                <button type="submit" class="btn btn-primary" data-cy="speichern-button">
+                                    Erstellen
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card shadow-sm bg-light">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">Hinweise</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-3">
+                            <strong>Passwort:</strong> Nach dem Erstellen wird automatisch ein sicheres Passwort generiert.
+                            Dieses wird Ihnen einmalig angezeigt und muss dem Kursbetreuer mitgeteilt werden.
+                        </p>
+                        <ul class="mb-0">
+                            <li>Alle mit <span class="text-danger">*</span> markierten Felder sind Pflichtfelder.</li>
+                            <li>Die E-Mail-Adresse muss eindeutig sein und darf nicht von einem anderen Nutzer verwendet werden.</li>
+                            <li>Die E-Mail-Adresse dient als Login-Name im System.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    // Formular-Validierung aktivieren
+    (() => {
+        'use strict'
+        
+        // Alle Formulare mit der Klasse 'needs-validation' auswählen
+        const forms = document.querySelectorAll('.needs-validation')
+        
+        // Für jedes Formular das Submit-Event abfangen
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+</body>
+</html>

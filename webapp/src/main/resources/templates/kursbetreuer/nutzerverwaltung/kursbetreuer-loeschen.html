@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kursbetreuer löschen - Bestätigung')}">
+    <title>Kursbetreuer löschen - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}(id=${kursbetreuer.id})}" 
+                    th:text="${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">Kursbetreuer Name</a></li>
+                <li class="breadcrumb-item active">Kursbetreuer löschen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5 text-danger">Kursbetreuer löschen</h1>
+                <p class="lead">Bitte bestätigen Sie das Löschen des Kursbetreuers.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="'Kursbetreuer: ' + ${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">Kursbetreuer Name</h5>
+                        <p class="card-text" th:if="${kursbetreuer.email != null}" th:text="'E-Mail: ' + ${kursbetreuer.email}">E-Mail</p>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bitte beachten Sie</h6>
+                            <p>Das Löschen des Kursbetreuers hat folgende Konsequenzen:</p>
+                            <ul>
+                                <li>Der Kursbetreuer verliert den Zugriff auf alle Kurse und Materialien</li>
+                                <li>Alle Berechtigungen und Zuweisungen des Kursbetreuers werden entfernt</li>
+                                <li>Die von diesem Kursbetreuer erstellten Inhalte und Kurse sind weiterhin im System verfügbar</li>
+                            </ul>
+                            <p class="mb-0"><strong>Diese Aktion kann nicht rückgängig gemacht werden!</strong></p>
+                        </div>
+                        
+                        <form th:action="@{/kursbetreuer/nutzer/kursbetreuer/delete/{id}(id=${kursbetreuer.id})}" method="post" class="mt-4">
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" name="confirmDelete" data-cy="confirm-delete-checkbox" required>
+                                <label class="form-check-label" for="confirmDelete">
+                                    Ich bestätige, dass ich den Kursbetreuer <strong th:text="${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">Kursbetreuer Name</strong> 
+                                    unwiderruflich löschen möchte.
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}(id=${kursbetreuer.id})}" class="btn btn-outline-secondary" data-cy="abbrechen-button">Abbrechen</a>
+                                <button type="submit" class="btn btn-danger" data-cy="bestaetigen-button">Kursbetreuer unwiderruflich löschen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

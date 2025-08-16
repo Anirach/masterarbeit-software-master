@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local,unittest}
+  datasource:
+    url: jdbc:tc:mariadb:11.7:///
+    username: root
+    password: demo
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  ai:
+    model:
+      chat: "openai"
+
+app:
+  ai:
+    evaluation:
+      model: "gpt-4.1-nano"
+      temperature: 0.0
+      max-tokens: 500
+    explanation:
+      model: "gpt-4.1-nano"
+      temperature: 0.0
+      max-tokens: 500

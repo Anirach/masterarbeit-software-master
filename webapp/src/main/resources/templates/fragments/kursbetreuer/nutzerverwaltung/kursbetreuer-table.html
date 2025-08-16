@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<!-- Fragment für die Kursbetreuer-Tabelle mit Suchfunktion -->
+<div th:fragment="kursbetreuer-table(kursbetreuer)" class="kursbetreuer-table-container">
+    <!-- Suchleiste -->
+    <div class="row mb-3">
+        <div class="col">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="betreuerSearch" name="betreuerSearch" class="form-control" placeholder="Suche nach Name oder Email..." data-cy="betreuer-suche"
+                       hx-post th:attr="hx-post=@{/kursbetreuer/htmx/nutzer/search/kursbetreuer}"
+                       hx-trigger="keyup changed delay:300ms, search"
+                       hx-target=".kursbetreuer-table"
+                       hx-indicator="#betreuer-search-indicator">
+            </div>
+            <div class="form-text">Live-Suche nach Name oder Email</div>
+        </div>
+        <div class="col-auto">
+            <div id="betreuer-search-indicator" class="htmx-indicator">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Suche...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kursbetreuer-Tabelle -->
+    <div class="kursbetreuer-table">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="kursbetreuer-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>E-Mail</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="betreuer : ${kursbetreuer}" th:id="'kursbetreuer-' + ${betreuer.id}">
+                        <td th:text="${betreuer.vorname + ' ' + betreuer.nachname}">Max Mustermann</td>
+                        <td th:text="${betreuer.email}">betreuer@example.com</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}(id=${betreuer.id})}" 
+                                   class="btn btn-sm btn-primary" data-cy="kursbetreuer-details-button"
+                                   title="Details anzeigen">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}/loeschen(id=${betreuer.id})}" 
+                                   class="btn btn-sm btn-danger" data-cy="kursbetreuer-loeschen-button"
+                                   title="Löschen">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${kursbetreuer.empty}">
+                        <td colspan="3" class="text-center">Keine Kursbetreuer gefunden</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

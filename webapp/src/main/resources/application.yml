@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: webapp
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  ai:
+    model:
+      embedding: "openai"
+      chat: "openai"
+    openai:
+      embedding:
+        options:
+          model: "text-embedding-3-small"
+    vectorstore:
+      mariadb:
+        initialize-schema: true
+        dimensions: 1536
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
+app:
+  test-data:
+    enabled: false
+  aktivitaet-cleanup-months: 6
+  ai:
+    evaluation:
+      model: "gpt-4.1"
+      temperature: 0.0
+      max-tokens: 500
+    explanation:
+      model: "gpt-4.1"
+      temperature: 0.2
+      max-tokens: 1000
+    relevance-check:
+      model: "gpt-4.1"
+      temperature: 0.0
+      max-tokens: 100
+    pdf-import:
+      model: "gpt-4.1"
+      temperature: 0.2
+      max-tokens: 5000
+    rag:
+      chunk-size: 500
+      chunk-overlap: 20
+      default-top-k: 5
+      default-similarity-threshold: 0.7
+      relevance-filter:
+        enabled: true
+        parallel-processing: true
+        min-document-count: 3
+      relevance-boost:
+        same-kurseinheit:
+          enabled: true
+          boost-factor: 0.3

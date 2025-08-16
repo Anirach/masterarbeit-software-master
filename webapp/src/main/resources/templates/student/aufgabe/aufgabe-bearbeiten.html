@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${aufgabe.titel})}">
+    <title>Aufgabe bearbeiten - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/student/dashboard}">Meine Kurse</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/student/kurs/{id}(id=${kursId})}" th:text="${kurs.name}">Kurs</a>
+                    </li>
+                    <li class="breadcrumb-item active" th:text="${aufgabe.titel}">Aufgabe</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5" th:text="${aufgabe.titel}">Aufgabentitel</h1>
+                    
+                    <!-- Fortschrittsanzeige für Teilaufgaben -->
+                    <div class="teilaufgaben-nav mt-3 mb-4" th:if="${aufgabe.teilaufgaben.size() > 1}">
+                        <div class="d-flex justify-content-between align-items-center teilaufgaben-stepper">
+                            <div th:each="teilaufgabe, stat : ${aufgabe.teilaufgaben}"
+                                 class="teilaufgabe-step"
+                                 th:classappend="${teilaufgabe.id == aktiveTeilaufgabe.id ? 'active' : (loesungsVersuche != null and loesungsVersuche.containsKey(teilaufgabe.id) ? 'completed' : '')}">
+                                <a th:href="@{/student/aufgaben/{id}(id=${aufgabe.id}, teilaufgabe=${teilaufgabe.id})}"
+                                   class="teilaufgabe-circle" th:text="${stat.count}"></a>
+                                <div class="teilaufgabe-label" th:text="'Teilaufgabe ' + ${stat.count}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Aufgabenstellung -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Aufgabenstellung</h2>
+                        </div>
+                        <div class="card-body">
+                            <!-- Allgemeine Aufgabenstellung, falls vorhanden -->
+                            <div th:if="${allgemeinerAufgabentext != null}" class="mb-4">
+                                <div class="aufgabenstellung-content p-3 border rounded bg-light"
+                                     th:utext="${allgemeinerAufgabentext.html}">
+                                    Allgemeine Aufgabenstellung wird hier angezeigt
+                                </div>
+                            </div>
+
+                            <!-- Aktionsleiste mit Buttons und Infos -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <!-- Information zur Teilaufgabe, falls mehrere vorhanden -->
+                                <div th:if="${letzterVersuch != null}">
+                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                            id="showLoesungsversucheBtn"
+                                            data-cy="show-solution-attempts-button"
+                                            th:hx-get="@{/student/aufgaben/htmx/loesungsversuche(teilaufgabeId=${aktiveTeilaufgabe.id})}"
+                                            hx-trigger="click"
+                                            hx-target="#loesungsversucheContainer"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#loesungsversucheModal">
+                                        <i class="bi bi-clock-history"></i> Bisherige Lösungsversuche
+                                    </button>
+                                </div>
+
+                                <!-- Reset Button, wenn es bereits Lösungsversuche gibt -->
+                                <div th:if="${letzterVersuch != null}" class="text-end">
+                                    <form th:action="@{/student/aufgaben/htmx/zuruecksetzen}" method="post"
+                                          onsubmit="return confirm('Möchtest du wirklich alle Eingaben zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.');">
+                                        <input type="hidden" name="teilaufgabeId" th:value="${aktiveTeilaufgabe.id}" />
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Eingaben zurücksetzen
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Include the combined form and evaluation container -->
+                            <div th:replace="~{student/aufgabe/fragments/aufgaben-form-fragment :: aufgaben-form}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Spinner während der Bewertung (außerhalb des aufgabenFormContainer) -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div id="bewertungsSpinner" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Bewerte Lösung...</span>
+                        </div>
+                        <p class="mt-2">Deine Lösung wird bewertet. Dies kann einen Moment dauern...</p>
+                    </div>
+                    
+                    <!-- Letzter Versuch, falls vorhanden und kein aktuelles Bewertungsergebnis -->
+                    <div id="letzterVersuchContainer" th:if="${letzterVersuch != null && letzterVersuch.bewertungPunkte != null && bewertung == null}" class="card shadow-sm mt-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h2 class="card-title h5 mb-0">Dein letzter Versuch</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Erreichte Punkte</h5>
+                                <span class="badge"
+                                      th:classappend="${letzterVersuch.bewertungPunkte >= 70 ? 'bg-success' : (letzterVersuch.bewertungPunkte >= 50 ? 'bg-warning' : 'bg-danger')}"
+                                      th:text="${letzterVersuch.bewertungPunkte} + ' / 100'">
+                                    0 / 100
+                                </span>
+                            </div>
+
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar"
+                                     th:style="'width: ' + ${letzterVersuch.bewertungPunkte} + '%'"
+                                     th:classappend="${letzterVersuch.bewertungPunkte >= 70 ? 'bg-success' : (letzterVersuch.bewertungPunkte >= 50 ? 'bg-warning' : 'bg-danger')}"
+                                     th:attr="aria-valuenow=${letzterVersuch.bewertungPunkte}"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            <div class="feedback-container p-3 border rounded bg-light">
+                                <h6>Feedback</h6>
+                                <div th:utext="${letzterVersuch.bewertungFeedback}" class="feedback-content">Feedback wird hier angezeigt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Teilaufgaben-Navigation wurde hier entfernt -->
+            
+            <!-- Navigations-Buttons -->
+            <div class="row mb-3">
+                <div class="col d-flex justify-content-between">
+                    <a th:href="@{/student/kurs/{id}(id=${kursId})}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Zurück zum Kurs
+                    </a>
+                    
+                    <a th:href="@{/student/chat/{id}(id=${aktiveTeilaufgabe.id})}" class="btn btn-outline-primary">
+                        <i class="bi bi-chat-dots"></i> Fragen zur Aufgabe stellen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Musterlösungen Modal is now included directly in the aufgaben-form-fragment -->
+
+    <!-- Include Lösungsversuche Modal -->
+    <div th:replace="~{student/aufgabe/fragments/loesungsversuche-modal-fragment :: loesungsversuche-modal}"></div>
+
+    <!-- Include Erklärung/Erläuterung Modal -->
+    <div th:replace="~{student/aufgabe/fragments/erlaeuterung-dialog-fragment :: erlaeuterung-modal}"></div>
+
+    <!-- Include Verbesserungsvorschläge/Feedback Modal -->
+    <div th:replace="~{student/aufgabe/fragments/erlaeuterung-dialog-fragment :: feedback-modal}"></div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+
+    <!-- Include CSS for the modals -->
+    <style th:replace="~{student/aufgabe/fragments/musterloesungen-modal-fragment :: musterloesungen-style}"></style>
+    <style th:replace="~{student/aufgabe/fragments/loesungsversuche-modal-fragment :: loesungsversuche-style}"></style>
+    <style th:replace="~{student/aufgabe/fragments/erlaeuterung-dialog-fragment :: dialogs-style}"></style>
+
+    <!-- Include the field-highlighting script from the fragment -->
+    <div th:replace="~{student/aufgabe/fragments/aufgaben-form-fragment :: aufgaben-form-script}"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render KaTeX in the general Aufgabenstellung if present
+            const aufgabenstellungContent = document.querySelector('.aufgabenstellung-content');
+            if (aufgabenstellungContent && typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(aufgabenstellungContent, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+            
+            // Zeigt den Spinner während der HTMX-Anfrage
+            htmx.on('#loesungsForm', 'htmx:beforeRequest', function(e) {
+                document.getElementById('bewertungsSpinner').classList.remove('d-none');
+                
+                // Button loading state
+                const evaluateButton = document.getElementById('evaluateButton');
+                if (evaluateButton) {
+                    evaluateButton.disabled = true;
+                    evaluateButton.querySelector('.button-content').classList.add('d-none');
+                    evaluateButton.querySelector('.loading-content').classList.remove('d-none');
+                }
+            });
+
+            htmx.on('#loesungsForm', 'htmx:afterRequest', function(e) {
+                document.getElementById('bewertungsSpinner').classList.add('d-none');
+                
+                // Reset button state
+                const evaluateButton = document.getElementById('evaluateButton');
+                if (evaluateButton) {
+                    evaluateButton.disabled = false;
+                    evaluateButton.querySelector('.button-content').classList.remove('d-none');
+                    evaluateButton.querySelector('.loading-content').classList.add('d-none');
+                }
+
+                // Verstecke den "Letzter Versuch" Container, wenn er existiert
+                const letzterVersuchContainer = document.getElementById('letzterVersuchContainer');
+                if (letzterVersuchContainer) {
+                    letzterVersuchContainer.style.display = 'none';
+                }
+
+                // Trigger the field highlighting script again after HTMX update
+                window.fieldHighlightingInitialized = false;
+                const event = new Event('DOMContentLoaded');
+                document.dispatchEvent(event);
+            });
+
+            // Zeigt den Spinner im Modal während der HTMX-Anfrage für Lösungsversuche
+            htmx.on('#loesungsversucheContainer', 'htmx:beforeRequest', function(e) {
+                const container = document.getElementById('loesungsversucheContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Lade Lösungsversuche...</span>
+                            </div>
+                            <p class="mt-3">Lade deine bisherigen Lösungsversuche...</p>
+                        </div>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <!-- Fragment für die Anzeige der Prompt-Vorschau -->
+    <div th:fragment="prompt-preview-fragment" class="prompt-preview-container">
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">LLM-Prompt Vorschau</h5>
+                <button type="button" class="btn-close" 
+                        data-bs-toggle="collapse" 
+                        th:data-bs-target="'#prompt-preview-content-' + ${teilaufgabeId}"
+                        aria-label="Schließen"></button>
+            </div>
+            <div class="card-body prompt-preview-content collapse show" th:id="'prompt-preview-content-' + ${teilaufgabeId}">
+                <p class="text-muted mb-2">
+                    Dies ist eine Vorschau des Prompts, der zur Bewertung der Aufgabe verwendet wird. 
+                    Das System wird diesen Text mit einem LLM nutzen, um die Lösungen der Studierenden zu bewerten.
+                </p>
+                <pre class="bg-light p-3 border rounded overflow-auto prompt-preview-code"><code th:text="${promptPreview}">Prompt Preview Text</code></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!-- Thymeleaf Fragment für den Musterlösung-Modal -->
+<div th:fragment="musterloesungen-modal" id="musterloesungenModal" class="modal fade" tabindex="-1" aria-labelledby="musterloesungenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="musterloesungenModalLabel">Musterlösung</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle"></i> Hinweis
+                    </h6>
+                    <p class="mb-0">
+                        Diese Musterlösung ist verfügbar, da du bereits mindestens 50% der Punkte erreicht hast.
+                        Nutze sie, um deine eigene Lösung zu verbessern und mehr über den Lösungsweg zu erfahren.
+                    </p>
+                </div>
+                
+                <div th:if="${aktiveTeilaufgabe != null}">
+                    <h4 class="mb-3">Musterlösung für Teilaufgabe <span th:text="${aktiveTeilaufgabe.reihenfolge}">1</span></h4>
+
+                    <!-- Bewertungshinweise, falls vorhanden -->
+                    <div th:if="${aktiveTeilaufgabe.musterloesungBewertungshinweise != null && !aktiveTeilaufgabe.musterloesungBewertungshinweise.isBlank()}" class="mb-4">
+                        <div class="card border-info">
+                            <div class="card-header bg-info bg-opacity-75 text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Erklärung zur Musterlösung
+                                </h5>
+                            </div>
+                            <div class="card-body bg-info bg-opacity-10">
+                                <div class="musterloesungs-hinweise" th:utext="${#strings.replace(#strings.escapeXml(aktiveTeilaufgabe.musterloesungBewertungshinweise), '&#10;', '<br />')}">
+                                    Bewertungshinweise werden hier angezeigt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gerenderte Aufgabenstellung mit Musterlösungen -->
+                    <div class="musterloesungs-container">
+                        <h5 class="mb-3">Aufgabenstellung mit eingebetteten Lösungen</h5>
+                        <div class="aufgabenstellung-content p-4 border rounded bg-light shadow-sm"
+                             th:if="${teilaufgabeMusterloesungMarkdown != null}"
+                             th:utext="${teilaufgabeMusterloesungMarkdown.html}">
+                            Aufgabenstellung mit Lösungen wird hier angezeigt
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS für die Musterlösung-Darstellung -->
+<style th:fragment="musterloesungen-style">
+    .musterloesungs-code {
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.9rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .musterloesungs-btn {
+        transition: all 0.3s ease;
+    }
+
+    .musterloesungs-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* Styling für das Aufgabenmarkdown mit Lösungen */
+    .musterloesungs-container .solution-field {
+        background-color: #e6f7ec;
+        color: #0d6efd;
+        font-weight: bold;
+        border: 2px solid #198754;
+        box-shadow: 0 0 4px rgba(25, 135, 84, 0.3);
+        border-radius: 4px;
+    }
+
+    .musterloesungs-container .inline-solution {
+        vertical-align: baseline;
+        line-height: 1.5;
+    }
+
+    .musterloesungs-container .multi-line-solution {
+        margin: 8px 0;
+        line-height: 1.6;
+    }
+
+    .musterloesungs-container .field-highlight-green {
+        background-color: rgba(25, 135, 84, 0.15);
+    }
+
+    /* Zeilenabstand im modalen Dialog optimieren */
+    #musterloesungenModal .modal-body p {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Mehr Platz für den Inhalt */
+    #musterloesungenModal .modal-lg {
+        max-width: 900px;
+    }
+
+    /* Musterlösung-Input-Felder hervorheben */
+    #musterloesungenModal input {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Styling für die Bewertungshinweise */
+    .musterloesungs-hinweise {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Zusätzlicher Abstand zwischen Aufgabenteilen im Modal */
+    #musterloesungenModal .aufgabenstellung-content {
+        margin-bottom: 2rem;
+    }
+</style>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Fortschrittsübersicht - ' + ${kurs.name})}">
+    <title>Fortschrittsübersicht - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item active">Fortschrittsübersicht</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="display-5">Fortschrittsübersicht: <span th:text="${kurs.name}">Kursname</span></h1>
+                            <p class="lead">Übersicht über den Lernfortschritt aller Studierenden in diesem Kurs.</p>
+                        </div>
+                        <a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${kurs.id})}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-people"></i> Belegungen verwalten
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Filter and Search Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/kursbetreuer/fortschritt/kurs/{kursId}(kursId=${kurs.id})}" 
+                  hx-get th:attr="hx-get=@{/kursbetreuer/fortschritt/htmx/kurs/{kursId}(kursId=${kurs.id})}" 
+                  hx-target="#fortschritt-table-container"
+                  hx-indicator="#loading-indicator">
+                <div class="row align-items-end">
+                    <div class="col-md-5">
+                        <label for="search" class="form-label">Suche nach Name oder E-Mail</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               th:value="${search}" placeholder="Name oder E-Mail eingeben...">
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" id="nurAktiv" name="nurAktiv" 
+                                   th:checked="${nurAktiv}" value="true">
+                            <label class="form-check-label" for="nurAktiv">
+                                Nur aktive Belegungen anzeigen
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Filtern
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a th:href="@{/kursbetreuer/fortschritt/kurs/{kursId}(kursId=${kurs.id})}" 
+                           class="btn btn-secondary w-100">
+                            <i class="bi bi-arrow-clockwise"></i> Zurücksetzen
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="htmx-indicator text-center my-3">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Lädt...</span>
+        </div>
+    </div>
+
+            <!-- Table Container -->
+            <div id="fortschritt-table-container">
+                <div th:replace="~{fragments/kursbetreuer/fortschritt-table :: fortschritt-table(fortschrittsPage=${fortschrittsPage}, kursId=${kurs.id})}"></div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

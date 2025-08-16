@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Student löschen - Bestätigung')}">
+    <title>Student löschen - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" 
+                       th:text="${student.displayName != null  ?
+                                student.displayName :
+                                'Student'}">
+                        Studentenname
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">Student löschen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5 text-danger">
+                    <span th:if="${student.istRegistriert}">Student löschen</span>
+                    <span th:unless="${student.istRegistriert}">Nicht registrierten Student löschen</span>
+                </h1>
+                <p class="lead">Bitte bestätigen Sie das Löschen des Studenten.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="'Student: ' + (${student.vorname != null and student.nachname != null} ? 
+                                                                     ${student.vorname + ' ' + student.nachname} : 
+                                                                     'Matrikelnr. ' + ${student.matrikelnummer})">Studentenname</h5>
+                        <p class="card-text" th:text="'Matrikelnummer: ' + ${student.matrikelnummer}">Matrikelnummer</p>
+                        
+                        <div th:if="${student.istRegistriert}" class="alert alert-warning mt-3">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bitte beachten Sie</h6>
+                            <p>Das Löschen des Studenten hat folgende Konsequenzen:</p>
+                            <ul>
+                                <li>Alle Kursbelegungen des Studenten werden gelöscht</li>
+                                <li>Alle Aktivitäten und Lernfortschritte des Studenten werden gelöscht</li>
+                                <li>Das Nutzerkonto des Studenten wird vollständig entfernt</li>
+                                <li>Der Student verliert den Zugriff auf alle seine Kurse</li>
+                            </ul>
+                            <p class="mb-0"><strong>Diese Aktion kann nicht rückgängig gemacht werden!</strong></p>
+                        </div>
+                        
+                        <div th:unless="${student.istRegistriert}" class="alert alert-info mt-3">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i>Hinweis</h6>
+                            <p>Sie löschen einen nicht registrierten Studenten. Dieser Student hat noch kein aktives Nutzerkonto im System.</p>
+                            <p>Alle Kursbelegungen dieses Studenten werden gelöscht.</p>
+                            <p class="mb-0">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+                        </div>
+                        
+                        <form th:action="@{/kursbetreuer/nutzer/student/delete/{id}(id=${student.id})}" method="post" class="mt-4">
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" name="confirmDelete" data-cy="confirm-delete-checkbox" required>
+                                <label class="form-check-label" for="confirmDelete">
+                                    <span th:if="${student.istRegistriert}">
+                                        Ich bestätige, dass ich den Studenten <strong th:text="${student.vorname + ' ' + student.nachname}">Studentenname</strong> 
+                                        und alle zugehörigen Daten unwiderruflich löschen möchte.
+                                    </span>
+                                    <span th:unless="${student.istRegistriert}">
+                                        Ich bestätige, dass ich den nicht registrierten Studenten mit der Matrikelnummer 
+                                        <strong th:text="${student.matrikelnummer}">Matrikelnummer</strong> unwiderruflich löschen möchte.
+                                    </span>
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" class="btn btn-outline-secondary" data-cy="abbrechen-button">Abbrechen</a>
+                                <button type="submit" class="btn btn-danger" data-cy="bestaetigen-button">Student unwiderruflich löschen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Alternative</h5>
+                        <p class="card-text">Anstatt den Studenten zu löschen, könnten Sie:</p>
+                        <ul class="card-text">
+                            <li>Die Kursbelegungen des Studenten anpassen</li>
+                            <li>Den Studenten nur für bestimmte Kurse sperren</li>
+                            <li>Das Passwort des Studenten zurücksetzen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kursverwaltung')}">
+    <title>Kursverwaltung - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5" th:text="#{dashboard.title}">Administrationsbereich</h1>
+                <p class="lead" th:text="#{dashboard.welcome}">Willkommen im Administrationsbereich für Kursbetreuer!</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Statistiken (letzte 24 Stunden) -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title" th:text="#{dashboard.statistics.solution_attempts}">Lösungsversuche (24h)</h6>
+                                <h4 class="mb-0" th:text="${statistics.anzahlLoesungsversuche}">0</h4>
+                            </div>
+                            <i class="bi bi-pencil-square fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title" th:text="#{dashboard.statistics.chat_messages}">Chat-Nachrichten (24h)</h6>
+                                <h4 class="mb-0" th:text="${statistics.anzahlChatNachrichten}">0</h4>
+                            </div>
+                            <i class="bi bi-chat-dots fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title" th:text="#{dashboard.statistics.ai_costs}">KI-Kosten (24h)</h6>
+                                <h4 class="mb-0" th:text="${#numbers.formatDecimal(statistics.aiKostenGesamt, 1, 4)} + ' $'">0.0000 $</h4>
+                            </div>
+                            <i class="bi bi-cash fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title" th:text="#{dashboard.statistics.active_users}">Aktive Nutzer (24h)</h6>
+                                <h4 class="mb-0" th:text="${statistics.anzahlAktiveNutzer}">0</h4>
+                            </div>
+                            <i class="bi bi-people fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Kacheln -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" th:text="#{dashboard.manage_courses}">Kurse verwalten</h5>
+                        <p class="card-text" th:text="#{dashboard.manage_courses.description}">Kurse und Kurseinheiten anlegen, bearbeiten und löschen.</p>
+                        <div class="mt-auto">
+                            <a th:href="@{/kursbetreuer/kursverwaltung}" class="btn btn-primary" th:text="#{button.goto_course_management}">Zur Kursverwaltung</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" th:text="#{dashboard.manage_users}">Nutzer verwalten</h5>
+                        <p class="card-text" th:text="#{dashboard.manage_users.description}">Kursbeleger hinzufügen, Fortschritte einsehen und Rechte verwalten.</p>
+                        <div class="mt-auto">
+                            <a th:href="@{/kursbetreuer/nutzer}" class="btn btn-primary" th:text="#{button.goto_user_management}">Zur Nutzerverwaltung</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" th:text="#{dashboard.view_activities}">Aktivitäten einsehen</h5>
+                        <p class="card-text" th:text="#{dashboard.view_activities.description}">Alle Systemaktivitäten durchsuchen und filtern.</p>
+                        <div class="mt-auto">
+                            <a th:href="@{/kursbetreuer/aktivitaeten}" class="btn btn-primary" th:text="#{button.goto_activity_overview}">Zur Aktivitätenübersicht</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h2 class="card-title h5 mb-0" th:text="#{dashboard.recent_activities}">Letzte Aktivitäten</h2>
+                        <a th:href="@{/kursbetreuer/aktivitaeten}" class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-list me-1"></i> <span th:text="#{dashboard.show_all}">Alle anzeigen</span>
+                        </a>
+                    </div>
+                    <div class="card-body p-3">
+                        <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-content(${aktivitaeten}, true, ${nutzer.id}, false, true)}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

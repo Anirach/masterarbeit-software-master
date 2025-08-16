@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${kurseinheit.name})}">
+    <title>Kurseinheit Details - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item active" th:text="${kurseinheit.name}">Kurseinheitname</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kurseinheit: <span th:text="${kurseinheit.name}">Kurseinheitname</span></h1>
+                    <p class="lead">Hier können Sie die Details und Inhalte der Kurseinheit verwalten.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Kurseinheitdetails -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">Kurseinheit Informationen</h2>
+                            <div>
+                                <a th:href="@{/kursbetreuer/kurseinheiten/{id}/bearbeiten(id=${kurseinheit.id})}" class="btn btn-sm btn-light" data-cy="kurseinheit-bearbeiten-button">Kurseinheit bearbeiten</a>
+                                <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/neu(id=${kurseinheit.id})}" class="btn btn-sm btn-light" data-cy="neue-aufgabe-button">Neue Aufgabe</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3 mt-4">Aufgaben</h3>
+                            
+                            <!-- Aufgaben-Liste-Fragment einbinden -->
+                            <div th:replace="~{fragments/kursbetreuer/aufgaben-liste-fragment :: aufgaben-liste-fragment}"></div>
+
+                            <h3 class="h6 mb-3 mt-4">Kursmaterialien</h3>
+
+                            <!-- Baumstruktur für Kursmaterialien -->
+                            <div th:replace="~{fragments/kursbetreuer/kurseinheit-material-list :: kurseinheit-material-list(${kurseinheit})}"></div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" class="btn btn-outline-secondary" data-cy="zurueck-zum-kurs-button">
+                        <i class="bi bi-arrow-left"></i> Zurück zum Kurs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

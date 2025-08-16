@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kurs zurücksetzen - Bestätigung')}">
+    <title>Kurs zurücksetzen - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/student/dashboard}">Meine Kurse</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/student/kurs/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                <li class="breadcrumb-item active">Kurs zurücksetzen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5 text-warning">Kurs zurücksetzen</h1>
+                <p class="lead">Bitte bestätigen Sie das Zurücksetzen Ihres Fortschritts im Kurs.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-warning">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="'Kurs: ' + ${kurs.name}">Kursname</h5>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bitte beachten Sie</h6>
+                            <p>Das Zurücksetzen Ihres Fortschritts hat folgende Konsequenzen:</p>
+                            <ul>
+                                <li>Alle Ihre Lösungsversuche für diesen Kurs werden zurückgesetzt</li>
+                                <li>Sie müssen alle Aufgaben erneut bearbeiten</li>
+                                <li>Alle erreichten Punkte werden zurückgesetzt</li>
+                            </ul>
+                            <p class="mb-0"><strong>Diese Aktion kann nicht rückgängig gemacht werden!</strong></p>
+                        </div>
+
+                        <form th:action="@{/student/kurs/{id}/reset(id=${kurs.id})}" method="post" class="mt-4">
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmReset" name="confirmReset" data-cy="confirm-reset-checkbox" required>
+                                <label class="form-check-label" for="confirmReset">
+                                    Ich bestätige, dass ich meinen gesamten Fortschritt im Kurs <strong th:text="${kurs.name}">Kursname</strong> unwiderruflich zurücksetzen möchte.
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/student/kurs/{id}(id=${kurs.id})}" class="btn btn-outline-secondary" data-cy="abbrechen-button">Abbrechen</a>
+                                <button type="submit" class="btn btn-warning" data-cy="bestaetigen-button">Kurs unwiderruflich zurücksetzen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Warum zurücksetzen?</h5>
+                        <p class="card-text">Ein Kurs-Reset kann hilfreich sein, wenn Sie:</p>
+                        <ul class="card-text">
+                            <li>Ihre bisherigen Antworten als nicht optimal empfinden</li>
+                            <li>Das Gelernte nochmals vollständig durcharbeiten möchten, beispielsweise zur Prüfungsvorbereitung</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kursverwaltung')}">
+    <title>Kursverwaltung - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Kursverwaltung</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kursverwaltung</h1>
+                    <p class="lead">Hier können Sie alle verfügbaren Kurse verwalten.</p>
+                </div>
+            </div>
+            
+            <!-- Benachrichtigungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Kursliste -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div th:replace="~{fragments/kursbetreuer/kursliste :: kursliste(${kurse})}"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

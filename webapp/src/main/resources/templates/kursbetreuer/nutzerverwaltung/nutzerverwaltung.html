@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Nutzerverwaltung')}">
+    <title>Nutzerverwaltung - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Nutzerverwaltung</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Nutzerverwaltung</h1>
+                    <p class="lead">Hier können Sie alle Nutzer des Systems verwalten.</p>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+
+            <!-- Studenten-Verwaltung -->
+            <div class="row mb-5">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">Studenten</h2>
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#studentErstellenInfoModal" data-cy="student-erstellen-info-button">
+                                <i class="bi bi-plus-circle"></i> Student anlegen
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div th:replace="~{fragments/kursbetreuer/nutzerverwaltung/studenten-table :: studenten-table(${studenten})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kursbetreuer-Verwaltung -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">Kursbetreuer</h2>
+                            <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/create}" class="btn btn-sm btn-light" data-cy="create-kursbetreuer-button">
+                                <i class="bi bi-plus-circle"></i> Kursbetreuer anlegen
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div th:replace="~{fragments/kursbetreuer/nutzerverwaltung/kursbetreuer-table :: kursbetreuer-table(${kursbetreuer})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <!-- Modal für Infos zum Anlegen von Studenten -->
+    <div class="modal fade" id="studentErstellenInfoModal" tabindex="-1" aria-labelledby="studentErstellenInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentErstellenInfoModalLabel">Informationen zum Anlegen von Studenten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h4 class="alert-heading">Studenten werden über Kursbelegungen angelegt</h4>
+                        <p>Studenten werden im System nicht direkt angelegt, sondern durch <strong>Kursbelegungen</strong> erstellt.</p>
+                        <hr>
+                        <p>Um einen neuen Studenten anzulegen, folgen Sie diesen Schritten:</p>
+                        <ol>
+                            <li>Gehen Sie zur <strong>Kursverwaltung</strong> und wählen Sie einen Kurs aus</li>
+                            <li>Klicken Sie auf <strong>Belegungen</strong> für den ausgewählten Kurs</li>
+                            <li>Wählen Sie <strong>Student hinzufügen</strong></li>
+                            <li>Geben Sie die <strong>Matrikelnummer</strong> des neuen Studenten ein</li>
+                            <li>Ein Studenteneintrag wird automatisch erstellt und dem Kurs zugewiesen</li>
+                        </ol>
+                        <p class="mb-0">Nachdem ein Student angelegt wurde, muss er sich mit seiner Matrikelnummer registrieren, um seine persönlichen Daten zu vervollständigen.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                    <a th:href="@{/kursbetreuer/kursverwaltung}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Zur Kursverwaltung
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

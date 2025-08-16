@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Fehler')}">
+    <title>Fehler - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Fehler</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-12">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h1 class="h4 mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <span th:text="${status != null} ? 'Fehler ' + ${status} : 'Fehler'">Fehler</span>
+                            </h1>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger" role="alert">
+                                <h5 th:if="${error}" th:text="${error}">Fehlertyp</h5>
+                                <p th:if="${message}" th:text="${message}">Fehlermeldung</p>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/}" class="btn btn-primary">
+                                    <i class="bi bi-house-door-fill me-2"></i>Zurück zur Startseite
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="card-title h4">Hilfe erhalten</h2>
+                            <p class="card-text">
+                                Falls Sie Hilfe benötigen oder der Fehler weiterhin besteht, kontaktieren Sie bitte
+                                Ihren Kursbetreuer.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

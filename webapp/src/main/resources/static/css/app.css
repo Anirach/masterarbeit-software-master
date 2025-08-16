@@ -1,0 +1,1130 @@
+/**
+ * Main Application Stylesheet
+ * Consolidated CSS for the entire application
+ * 
+ * Table of Contents:
+ * 1. CSS Variables & Root Styles
+ * 2. Typography & Base Elements
+ * 3. Layout & Structure
+ * 4. Components
+ * 5. Forms & Inputs
+ * 6. Tables
+ * 7. Navigation & Menus
+ * 8. Cards & Panels
+ * 9. Modals & Dialogs
+ * 10. Alerts & Messages
+ * 11. Progress & Loading
+ * 12. Chat Interface
+ * 13. Markdown & Code
+ * 14. Activity Timeline
+ * 15. Task Management
+ * 16. Utility Classes
+ * 17. Responsive Design
+ */
+
+/* ========================================
+   1. CSS Variables & Root Styles
+   ======================================== */
+:root {
+    /* FernUni Brand Colors */
+    --bs-primary: #004c97;
+    --fernuni-primary: #004c97;
+    --fernuni-primary-hover: #003a77;
+    --fernuni-nav-bg: #006666;
+    --fernuni-nav-hover: #148181;
+    
+    /* Primary Colors */
+    --primary-color: #004c97;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    /* Background Colors */
+    --success-bg: rgba(40, 167, 69, 0.1);
+    --warning-bg: rgba(255, 193, 7, 0.1);
+    --danger-bg: rgba(220, 53, 69, 0.1);
+    --info-bg: rgba(23, 162, 184, 0.1);
+    
+    /* Border Colors */
+    --border-color: #dee2e6;
+    --border-color-light: #e9ecef;
+    
+    /* Text Colors */
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-full: 50%;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-base: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+}
+
+/* ========================================
+   2. Typography & Base Elements
+   ======================================== */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+}
+
+code {
+    background-color: var(--light-color);
+    padding: 0.1rem 0.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: var(--light-color);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+}
+
+blockquote {
+    border-left: 4px solid var(--border-color);
+    padding-left: var(--spacing-md);
+    font-style: italic;
+    margin: var(--spacing-md) 0;
+}
+
+/* ========================================
+   3. Layout & Structure
+   ======================================== */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.main-content {
+    flex: 1;
+    min-height: calc(100vh - 300px);
+    padding: 2rem 0;
+}
+
+/* FernUni Header */
+.fernuni-header {
+    background-color: #fff;
+    padding: 10px 0;
+}
+
+/* FernUni Navigation */
+.fernuni-nav {
+    background-color: var(--fernuni-nav-bg);
+    color: white;
+}
+
+.fernuni-nav .nav-link {
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.fernuni-nav .nav-link:hover {
+    background-color: var(--fernuni-nav-hover);
+}
+
+/* Language Switcher */
+.fernuni-nav #languageDropdown {
+    color: white;
+    text-decoration: none;
+}
+
+.fernuni-nav #languageDropdown:hover {
+    background-color: var(--fernuni-nav-hover);
+}
+
+.fernuni-nav .dropdown-menu {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.fernuni-nav .dropdown-item {
+    color: #212529;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.fernuni-nav .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.fernuni-nav .dropdown-item.active {
+    background-color: var(--fernuni-primary);
+    color: white;
+}
+
+.fernuni-nav .dropdown-item.active:hover {
+    background-color: var(--fernuni-primary-hover);
+}
+
+/* Breadcrumb Section */
+.breadcrumb-section {
+    background-color: #f5f5f5;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+.breadcrumb-section .breadcrumb {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--fernuni-primary);
+    color: white;
+    padding: 1.5rem 0;
+    margin-top: 0;
+}
+
+/* Bootstrap Theme Overrides */
+.btn-primary {
+    background-color: var(--fernuni-primary);
+    border-color: var(--fernuni-primary);
+}
+
+.btn-primary:hover, 
+.btn-primary:active, 
+.btn-primary:focus {
+    background-color: var(--fernuni-primary-hover);
+    border-color: var(--fernuni-primary-hover);
+}
+
+.bg-primary {
+    background-color: var(--fernuni-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--fernuni-primary) !important;
+}
+
+.link-primary {
+    color: var(--fernuni-primary) !important;
+}
+
+.text-primary {
+    color: var(--fernuni-primary) !important;
+}
+
+/* ========================================
+   4. Components
+   ======================================== */
+
+/* Icon Circles */
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+/* Badges */
+.badge-link {
+    text-decoration: none;
+}
+
+/* User Labels */
+.user-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ========================================
+   5. Forms & Inputs
+   ======================================== */
+
+/* Auto-resize Textareas */
+.auto-resize {
+    min-height: 5em;
+    overflow: hidden;
+    resize: none;
+    transition: height var(--transition-fast);
+}
+
+/* Field Highlighting for Validation */
+.field-highlight-green,
+.field-highlight-green input,
+.field-highlight-green textarea {
+    background-color: var(--success-bg) !important;
+    border-color: var(--success-color) !important;
+}
+
+.field-highlight-yellow,
+.field-highlight-yellow input,
+.field-highlight-yellow textarea {
+    background-color: var(--warning-bg) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.field-highlight-red,
+.field-highlight-red input,
+.field-highlight-red textarea {
+    background-color: var(--danger-bg) !important;
+    border-color: var(--danger-color) !important;
+}
+
+/* ========================================
+   6. Tables
+   ======================================== */
+
+/* Sortable Tables */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background-color: var(--light-color);
+}
+
+.sortable::after {
+    content: ' ⇅';
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.sortable.asc::after {
+    content: ' ↑';
+    color: var(--primary-color);
+}
+
+.sortable.desc::after {
+    content: ' ↓';
+    color: var(--primary-color);
+}
+
+/* ========================================
+   7. Navigation & Menus
+   ======================================== */
+
+/* Material Tree Navigation */
+.material-tree .list-group-item {
+    background-color: transparent;
+}
+
+.material-tree .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.material-tree [data-bs-toggle="collapse"] {
+    cursor: pointer;
+}
+
+.material-tree .collapse-icon {
+    transition: transform var(--transition-base);
+}
+
+.material-tree [data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-right {
+    transform: rotate(90deg);
+}
+
+.material-tree [data-bs-toggle="collapse"][aria-expanded="false"] .bi-chevron-down {
+    transform: rotate(-90deg);
+}
+
+/* Task Navigation Stepper */
+.teilaufgaben-nav {
+    margin-bottom: var(--spacing-lg);
+}
+
+.teilaufgaben-stepper {
+    position: relative;
+    padding: 0 var(--spacing-md);
+}
+
+.teilaufgaben-stepper::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border-color-light);
+    z-index: 0;
+}
+
+.teilaufgabe-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    padding: 0 var(--spacing-sm);
+    flex: 1;
+    text-align: center;
+}
+
+.teilaufgabe-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background-color: var(--border-color-light);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: bold;
+    text-decoration: none;
+    transition: all var(--transition-base);
+}
+
+.teilaufgabe-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.teilaufgabe-step.active .teilaufgabe-circle {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+}
+
+.teilaufgabe-step.active .teilaufgabe-label {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.teilaufgabe-step.completed .teilaufgabe-circle {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.teilaufgabe-step:not(.active) .teilaufgabe-circle:hover {
+    background-color: var(--light-color);
+    border-color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* ========================================
+   8. Cards & Panels
+   ======================================== */
+
+/* Image Cards */
+.image-card {
+    cursor: pointer;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.image-card .card-img-top {
+    transition: opacity var(--transition-base);
+}
+
+.image-card:hover .card-img-top {
+    opacity: 0.9;
+}
+
+.card-img-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    overflow: hidden;
+}
+
+/* ========================================
+   9. Modals & Dialogs
+   ======================================== */
+
+/* Full-height Modal Content */
+.modal-body-full {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+/* ========================================
+   10. Alerts & Messages
+   ======================================== */
+
+/* Animation for alerts */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.alert-animated {
+    animation: fadeIn var(--transition-slow);
+}
+
+/* ========================================
+   11. Progress & Loading
+   ======================================== */
+
+/* HTMX Indicators */
+.htmx-indicator {
+    display: none;
+    transition: opacity var(--transition-base);
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: block;
+}
+
+/* Loading Spinners */
+.loading-spinner {
+    border-radius: var(--radius-md);
+    background-color: rgba(248, 249, 250, 0.9);
+    padding: var(--spacing-lg);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Progress Bars */
+.progress-thin {
+    height: 5px;
+}
+
+.progress-medium {
+    height: 10px;
+}
+
+.progress-thick {
+    height: 20px;
+}
+
+/* ========================================
+   12. Chat Interface
+   ======================================== */
+
+/* Chat Container */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 300px);
+    min-height: 400px;
+}
+
+.chat-messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-height: 100%;
+}
+
+.chat-messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+/* Chat Messages */
+.chat-message {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    max-width: 85%;
+    position: relative;
+    word-break: break-word;
+}
+
+.system-message {
+    background-color: #f0f7ff;
+    border-left: 4px solid var(--primary-color);
+    align-self: flex-start;
+}
+
+.student-message {
+    background-color: #e9f7ef;
+    border-right: 4px solid var(--success-color);
+    align-self: flex-end;
+}
+
+.message-sender {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+}
+
+.message-content {
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+/* System Message Markdown Styling */
+.system-message .message-content {
+    white-space: normal;
+}
+
+.system-message .message-content p {
+    margin-bottom: 0.75rem;
+}
+
+.system-message .message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.system-message .message-content ul, 
+.system-message .message-content ol {
+    margin-top: var(--spacing-sm);
+    margin-bottom: 0.75rem;
+    padding-left: var(--spacing-lg);
+}
+
+.system-message .message-content pre {
+    background-color: var(--light-color);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    margin: 0.75rem 0;
+    white-space: pre-wrap;
+}
+
+.system-message .message-content code {
+    background-color: var(--light-color);
+    padding: 0.1rem 0.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+}
+
+.system-message .message-content blockquote {
+    border-left: 4px solid var(--border-color);
+    padding-left: 0.75rem;
+    font-style: italic;
+    margin: 0.75rem 0;
+}
+
+.system-message .message-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0;
+}
+
+.system-message .message-content table th,
+.system-message .message-content table td {
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-sm);
+    text-align: left;
+}
+
+.system-message .message-content table th {
+    background-color: var(--light-color);
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+    text-align: right;
+}
+
+/* Message References */
+.message-references {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px dashed var(--border-color);
+    font-size: 0.85rem;
+}
+
+.message-references ul {
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+}
+
+.message-references li {
+    padding-left: var(--spacing-sm);
+    margin-top: 0.25rem;
+    color: var(--text-primary);
+}
+
+.message-references .bi {
+    margin-right: 0.25rem;
+    color: var(--text-secondary);
+}
+
+/* Solution Attempt Context */
+.solution-attempt-context {
+    background-color: #fff3cd;
+    border-left: 4px solid var(--warning-color);
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+    border-radius: var(--radius-sm);
+}
+
+.solution-attempt-context h5 {
+    color: #856404;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.solution-attempt-context pre {
+    background-color: var(--light-color);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    margin: var(--spacing-sm) 0;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+}
+
+/* Rating Colors */
+.rating-success {
+    color: var(--success-color);
+}
+
+.rating-warning {
+    color: var(--warning-color);
+}
+
+.rating-danger {
+    color: var(--danger-color);
+}
+
+/* Chat Input */
+.chat-input-container {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background-color: white;
+}
+
+.chat-form {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.chat-input {
+    flex-grow: 1;
+    border-radius: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--border-color);
+    resize: none;
+    height: 45px;
+    max-height: 150px;
+    overflow-y: auto;
+    transition: all var(--transition-base);
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.send-button {
+    border-radius: var(--radius-full);
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* ========================================
+   13. Markdown & Code
+   ======================================== */
+
+/* Markdown Editor */
+.editor-toolbar {
+    border-color: var(--border-color);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.CodeMirror {
+    border-color: var(--border-color);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+/* Full-screen editor */
+.CodeMirror-fullscreen, 
+.editor-toolbar.fullscreen {
+    z-index: 1050;
+}
+
+/* Editor Preview */
+.markdown-preview {
+    min-height: 6rem;
+}
+
+/* Markdown Help */
+.markdown-help code {
+    background-color: var(--light-color);
+    padding: 0.1rem 0.2rem;
+    border-radius: 0.2rem;
+    font-size: 0.85em;
+}
+
+/** Textarea styling in preview **/
+.markdown-preview textarea.question {
+    width: 100%;
+}
+.editor-preview textarea.question {
+    width: 100%;
+}
+
+/* EasyMDE Bootstrap Compatibility */
+.editor-toolbar button {
+    color: var(--text-primary);
+}
+
+.editor-toolbar button:hover, 
+.editor-toolbar button.active {
+    background: var(--border-color-light);
+    border-color: var(--border-color);
+}
+
+.editor-toolbar i.separator {
+    border-color: var(--border-color);
+}
+
+/* Musterloesung Fields */
+.musterloesungs-felder {
+    background-color: var(--light-color);
+}
+
+.musterloesungs-felder .form-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+/* Tab Content Scrolling */
+.tab-pane .CodeMirror-scroll {
+    min-height: 100px;
+}
+
+.tab-pane[id$='-panel'] {
+    height: auto;
+    overflow: visible;
+}
+
+/* KaTeX Preview */
+.katex-preview {
+    background-color: var(--light-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    min-height: 2rem;
+    overflow-x: auto;
+}
+
+.katex-preview:empty::before {
+    content: "LaTeX-Vorschau";
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.katex-display {
+    margin: 0;
+}
+
+/* Prompt Preview */
+.prompt-preview-container {
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.prompt-preview-content {
+    max-height: 500px;
+    transition: max-height var(--transition-base);
+}
+
+.prompt-preview-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-left: 3px solid var(--primary-color);
+}
+
+.prompt-preview-code .prompt-section {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.prompt-preview-code .prompt-section:last-child {
+    border-bottom: none;
+}
+
+.prompt-preview-code .prompt-separator {
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+/* ========================================
+   14. Activity Timeline
+   ======================================== */
+
+/* Activity timeline styles are integrated above */
+
+/* ========================================
+   15. Task Management
+   ======================================== */
+
+/* Task Content Styling */
+.task-content {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.task-content img {
+    max-width: 100%;
+    height: auto;
+    margin: var(--spacing-md) 0;
+}
+
+.task-content pre {
+    background-color: var(--light-color);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+}
+
+.task-content code {
+    background-color: var(--light-color);
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    color: #d63384;
+}
+
+/* Task Input Fields */
+.aufgabenstellung-content input,
+.aufgabenstellung-content textarea,
+.task-content input,
+.task-content textarea {
+    max-width: 100% !important;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+}
+
+/* Hide spinner arrows from number inputs */
+.aufgabenstellung-content input[type="number"],
+.task-content input[type="number"],
+.musterloesungs-felder input[type="number"],
+input[type="number"].question {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+}
+
+.aufgabenstellung-content input[type="number"]::-webkit-outer-spin-button,
+.aufgabenstellung-content input[type="number"]::-webkit-inner-spin-button,
+.task-content input[type="number"]::-webkit-outer-spin-button,
+.task-content input[type="number"]::-webkit-inner-spin-button,
+.musterloesungs-felder input[type="number"]::-webkit-outer-spin-button,
+.musterloesungs-felder input[type="number"]::-webkit-inner-spin-button,
+input[type="number"].question::-webkit-outer-spin-button,
+input[type="number"].question::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Ensure minimum length validation for all input fields */
+.aufgabenstellung-content input,
+.task-content input,
+.musterloesungs-felder input,
+input.question {
+    min-width: 2ch;
+}
+
+.aufgabenstellung-content textarea,
+.task-content textarea {
+    width: 100% !important;
+}
+
+.aufgabenstellung-content input:focus,
+.aufgabenstellung-content textarea:focus,
+.task-content input:focus,
+.task-content textarea:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+/* Auto-resize functionality for textareas */
+.aufgabenstellung-content textarea.auto-resize,
+.task-content textarea.auto-resize {
+    min-height: 5em;
+    overflow: hidden;
+    resize: none;
+    transition: height var(--transition-fast);
+}
+
+/* ========================================
+   16. Utility Classes
+   ======================================== */
+
+/* Display Utilities */
+.hide-initially {
+    display: none;
+}
+
+/* Scrollable Containers */
+.scrollable-sm {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.scrollable-md {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.scrollable-lg {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.scrollable-xl {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Text Utilities */
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Animation Utilities */
+.fade-in {
+    animation: fadeIn var(--transition-slow);
+}
+
+/* Spacing Utilities (complement Bootstrap) */
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+.gap-xl { gap: var(--spacing-xl); }
+
+/* ========================================
+   17. Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* Chat Responsive */
+    .chat-message {
+        max-width: 90%;
+    }
+    
+    .chat-container {
+        max-height: calc(100vh - 250px);
+        min-height: 300px;
+    }
+    
+    /* Task Content Responsive */
+    .aufgabenstellung-content {
+        font-size: 1rem;
+    }
+    
+    /* Task Navigation Responsive */
+    .teilaufgabe-label {
+        font-size: 0.7rem;
+        display: none;
+    }
+    
+    .teilaufgabe-circle {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .teilaufgaben-stepper::before {
+        top: 16px;
+    }
+    
+    /* Prompt Preview Responsive */
+    .prompt-preview-code {
+        font-size: 0.8rem;
+        max-height: 300px;
+    }
+    
+    /* Main Content Padding */
+    .main-content {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small devices */
+    .hide-xs {
+        display: none !important;
+    }
+    
+    /* Reduce spacing on mobile */
+    .main-content {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .chat-input-container,
+    .editor-toolbar,
+    .btn {
+        display: none !important;
+    }
+}

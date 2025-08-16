@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${aufgabe.titel} + ' - Chat')}">
+    <title>Chat - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/student/dashboard}">Meine Kurse</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/student/kurs/{id}(id=${kurseinheit.kursId})}" th:text="${kursName}">Kurs</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/student/kurs/{id}(id=${aufgabe.kurseinheitId})}" th:text="${kurseinheit.name}">Kurseinheit</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/student/aufgaben/{id}(id=${aufgabe.id})}" th:text="${aufgabe.titel}">Aufgabe</a>
+                    </li>
+                    <li class="breadcrumb-item active">Chat</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="h2 mb-4">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Chat zu Aufgabe: <span th:text="${aufgabe.titel}">Aufgabentitel</span>
+                    </h1>
+                    
+                    <!-- Meldungen einbinden -->
+                    <div th:replace="~{fragments/messages :: messages}"></div>
+                    
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Fragen zur Aufgabe stellen</h5>
+                            <a th:href="@{/student/aufgaben/{id}(id=${aufgabe.id})}" class="btn btn-sm btn-outline-light">
+                                <i class="bi bi-arrow-left"></i> Zurück zur Aufgabe
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="alert alert-info mb-4">
+                                        <p class="mb-0">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            Hier kannst du Fragen zu dieser Aufgabe stellen. Du erhältst Antworten auf Basis der Kursmaterialien.
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Chat-Nachrichten-Container -->
+                                    <div class="chat-container border rounded bg-light shadow-sm mb-3">
+                                        <div class="chat-messages-container" id="chatMessagesContainer" data-cy="chat-messages-container">
+                                            <div th:replace="~{student/chat/fragments/nachrichten-liste :: nachrichten}"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Erklärungsmodus-Info anzeigen, wenn aktiviert -->
+                                    <div th:if="${isExplanationMode}" class="alert alert-info mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Erklärungsmodus:</strong> Der Assistent wird dir helfen, diese Aufgabe besser zu verstehen.
+                                    </div>
+                                    
+                                    <!-- Formular zum Senden neuer Nachrichten -->
+                                    <div class="chat-input-container mt-3">
+                                        <form id="chatForm" th:hx-post="@{/student/chat/htmx/sende-nachricht}"
+                                              hx-trigger="submit" hx-target="#chatMessagesContainer"
+                                              hx-indicator="#spinnerContainer" class="chat-form">
+                                            
+                                            <input type="hidden" name="chatId" th:value="${chat.id}" />
+                                            <!-- Modus-Flag für die Anfrage -->
+                                            <input type="hidden" name="isExplanationMode" th:value="${isExplanationMode}" th:if="${isExplanationMode}" />
+                                            <input type="hidden" name="teilaufgabeId" th:value="${teilaufgabe?.id}" th:if="${teilaufgabe != null}" />
+                                            
+                                            <input type="text" name="nachricht" class="form-control chat-input"
+                                                   placeholder="Deine Frage..." 
+                                                   aria-label="Nachricht" required
+                                                   autocomplete="off"
+                                                   th:value="${initialMessage}"
+                                                   data-cy="chat-input">
+                                            <button class="btn btn-primary send-button" type="submit" data-cy="send-chat-button">
+                                                <i class="bi bi-send"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Ladeanzeige während der Antwortgenerierung -->
+                                    <div id="spinnerContainer" class="htmx-indicator text-center py-3 htmx-indicator">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Generiere Antwort...</span>
+                                        </div>
+                                        <p class="mt-2">Deine Frage wird beantwortet. Dies kann einen Moment dauern...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <!-- Chat-spezifisches CSS -->
+    <link th:href="@{/css/chat-view.css}" rel="stylesheet" />
+    
+    <!-- Script für automatisches Scrollen zum Ende des Chat-Fensters -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chatMessagesContainer');
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.querySelector('.chat-input');
+            const sendButton = document.querySelector('.send-button');
+            
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Bei HTMX-Updates automatisch nach unten scrollen
+                document.body.addEventListener('htmx:afterSwap', function() {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    // Nach Antwort vom Server den Button wieder aktivieren
+                    sendButton.disabled = false;
+                });
+            }
+            
+            // Nachricht sofort anzeigen und Form zurücksetzen
+            if (chatForm) {
+                chatForm.addEventListener('submit', function(e) {
+                    // Form-Daten abrufen
+                    const nachrichtText = chatInput.value.trim();
+                    if (!nachrichtText) return; // Leere Nachrichten ignorieren
+                    
+                    // Button deaktivieren während Antwort generiert wird
+                    sendButton.disabled = true;
+                    
+                    // Nachricht sofort in den Chat einfügen
+                    appendUserMessage(nachrichtText);
+                    
+                    // Form zurücksetzen
+                    setTimeout(() => {
+                        chatForm.reset();
+                    }, 0);
+                });
+                
+                // Nicht mehr benötigt, da wir das Formular sofort zurücksetzen
+                // chatForm.addEventListener('htmx:afterRequest', function() {
+                //     this.reset();
+                // });
+            }
+            
+            // Funktion zum Einfügen der Benutzernachricht in den Chat
+            function appendUserMessage(message) {
+                const messagesContainer = document.querySelector('.chat-messages-list');
+                if (!messagesContainer) {
+                    // Falls noch keine Nachrichten vorhanden sind, erstelle die Liste
+                    const emptyContainer = document.querySelector('#chatMessagesContainer > div');
+                    if (emptyContainer) {
+                        emptyContainer.innerHTML = '<div class="chat-messages-list"></div>';
+                        appendUserMessage(message); // Rekursiver Aufruf nach Erstellung der Liste
+                        return;
+                    }
+                }
+                
+                // Aktuelles Datum und Uhrzeit formatieren
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('de-DE', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                }) + ' ' + 
+                now.toLocaleTimeString('de-DE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                // Nachrichtenelement erstellen
+                const messageElement = document.createElement('div');
+                messageElement.className = 'chat-message student-message';
+                messageElement.setAttribute('data-cy', 'chat-message-student');
+                messageElement.innerHTML = `
+                    <div class="message-sender">
+                        <strong>Du</strong>
+                    </div>
+                    <div class="message-content">${message}</div>
+                    <div class="message-time">${formattedDate}</div>
+                `;
+                
+                messagesContainer.appendChild(messageElement);
+                
+                // Nach unten scrollen
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Automatisches Absenden im Erklärungsmodus
+            const isExplanationMode = /*[[${isExplanationMode}]]*/ false;
+            if (isExplanationMode && chatForm) {
+                // Warte kurz, damit die Seite vollständig geladen ist
+                setTimeout(function() {
+                    chatForm.requestSubmit();
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

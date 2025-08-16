@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kurs zu Student hinzufügen')}">
+    <title>Kurs zu Student hinzufügen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" th:text="${student.displayName ?: 'Student'}">Student</a></li>
+                    <li class="breadcrumb-item active">Kurs hinzufügen</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kurs zu Student hinzufügen</h1>
+                    <p class="lead">Wählen Sie einen Kurs aus, zu dem der Student noch nicht angemeldet ist, und legen Sie den Belegungszeitraum fest.</p>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Kurs zu Student hinzufügen: 
+                                <span th:if="${student.vorname != null and student.nachname != null}" 
+                                      th:text="${student.vorname + ' ' + student.nachname}">Max Mustermann</span>
+                                <span th:if="${student.vorname == null or student.nachname == null}" 
+                                      th:text="'Matrikelnr. ' + ${student.matrikelnummer}">Matrikelnr. 12345678</span>
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/kursbetreuer/nutzer/student/{studentId}/belegung/add(studentId=${student.id})}" method="post">
+                                <input type="hidden" name="returnTo" th:value="${returnTo}" />
+                                
+                                <div class="mb-3">
+                                    <label for="kursId" class="form-label">Kurs</label>
+                                    <select id="kursId" name="kursId" class="form-select" data-cy="kurs-select" required>
+                                        <option value="">-- Bitte wählen --</option>
+                                        <option th:each="kurs : ${verfuegbareKurse}"
+                                                th:value="${kurs.id}"
+                                                th:text="${kurs.name}"
+                                                th:selected="${preselectedKurs != null && preselectedKurs.id == kurs.id}">
+                                        </option>
+                                    </select>
+                                    <div th:if="${verfuegbareKurse.empty}" class="form-text text-danger">
+                                        Der Student belegt bereits alle verfügbaren Kurse.
+                                    </div>
+                                </div>
+
+                                <!-- Zeitraum festlegen -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="startDatum" class="form-label">Startdatum</label>
+                                        <input type="date" id="startDatum" name="startDatum" class="form-control" 
+                                               th:value="${startDatum}" data-cy="belegung-start-datum" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDatum" class="form-label">Enddatum (optional)</label>
+                                        <input type="date" id="endDatum" name="endDatum" class="form-control" 
+                                               th:value="${endDatum}" data-cy="belegung-end-datum">
+                                        <div class="form-text">Leer lassen für unbegrenzte Belegung</div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit-Button -->
+                                <div class="d-flex justify-content-between">
+                                    <a th:if="${returnTo == 'kurs' && preselectedKurs != null}" 
+                                       th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${preselectedKurs.id})}" 
+                                       class="btn btn-secondary" data-cy="belegung-abbrechen-button">
+                                        <i class="bi bi-x-circle"></i> Abbrechen
+                                    </a>
+                                    <a th:if="${returnTo != 'kurs' || preselectedKurs == null}" 
+                                       th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" 
+                                       class="btn btn-secondary" data-cy="belegung-abbrechen-button">
+                                        <i class="bi bi-x-circle"></i> Abbrechen
+                                    </a>
+                                    <button type="submit" class="btn btn-success" data-cy="belegung-speichern-button"
+                                            th:disabled="${verfuegbareKurse.empty}">
+                                        <i class="bi bi-check-circle"></i> Hinzufügen
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h3 class="card-title h5 mb-0">Hinweise</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Es werden nur Kurse angezeigt, die der Student noch nicht belegt.</li>
+                                <li>Das Startdatum gibt an, ab wann der Student Zugriff auf den Kurs hat.</li>
+                                <li>Ein Enddatum ist optional. Ohne Enddatum ist die Belegung zeitlich unbegrenzt.</li>
+                                <li>Studenten können nur auf Kurse zugreifen, für die sie eine aktive Belegung haben.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

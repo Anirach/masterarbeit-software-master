@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragment für die Aufgaben-Liste innerhalb einer Kurseinheit mit Drag & Drop Funktionalität -->
+    <div th:fragment="aufgaben-liste-fragment" class="aufgaben-liste-container" id="aufgaben-liste">
+        <style>
+            .sortable-ghost {
+                background-color: #f8f9fa;
+                opacity: 0.7;
+            }
+            .drag-handle {
+                cursor: grab;
+            }
+            .drag-handle:active {
+                cursor: grabbing;
+            }
+        </style>
+        
+        <div class="mb-3">
+            <div id="reorder-status" 
+                 hx-swap-oob="true"
+                 class="htmx-indicator spinner-border spinner-border-sm text-primary ms-2 d-none" 
+                 role="status">
+                <span class="visually-hidden">Wird aktualisiert...</span>
+            </div>
+        </div>
+        
+        <!-- Anzeige wenn keine Aufgaben vorhanden sind -->
+        <div th:if="${aufgaben == null || aufgaben.isEmpty()}" class="text-center p-4 bg-light rounded">
+            <p class="text-muted mb-3">Dieser Kurseinheit sind noch keine Aufgaben zugeordnet.</p>
+            <p>Erstellen Sie Aufgaben, damit Studierende den Inhalt der Kurseinheit üben können.</p>
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/import(id=${kurseinheitId})}" class="btn btn-outline-info" data-cy="aufgaben-importieren-button">
+                    <i class="bi bi-upload"></i> Aufgaben importieren
+                </a>
+                <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/generator(id=${kurseinheitId})}" class="btn btn-outline-primary" data-cy="aufgabe-generieren-button">
+                    <i class="bi bi-lightbulb"></i> Aufgabe generieren
+                </a>
+                <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/neu(id=${kurseinheitId})}" class="btn btn-success" data-cy="erste-aufgabe-erstellen-button">
+                    <i class="bi bi-plus-circle"></i> Aufgabe erstellen
+                </a>
+            </div>
+        </div>
+        
+        <!-- Tabelle mit Aufgaben, wenn vorhanden -->
+        <div th:if="${aufgaben != null && !aufgaben.isEmpty()}" class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Typ</th>
+                        <th>Teilaufgaben</th>
+                        <th class="pe-4">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="aufgaben-sortable">
+                    <tr th:each="aufgabe : ${aufgaben}" 
+                        th:data-id="${aufgabe.id}"
+                        th:data-cy-aufgabe="${aufgabe.titel}"
+                        class="sortable-item"
+                        data-cy="aufgabe-item">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-grip-vertical me-2 text-muted drag-handle"></i>
+                                <span th:text="${aufgabe.titel}">Aufgabe 1</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${aufgabe.einfach}" class="badge bg-info">Einfach</span>
+                            <span th:unless="${aufgabe.einfach}" class="badge bg-warning">Mehrere Teilaufgaben</span>
+                        </td>
+                        <td>
+                            <span th:if="${aufgabe.einfach}">1</span>
+                            <span th:unless="${aufgabe.einfach}" class="badge bg-secondary rounded-pill">
+                                <i class="bi bi-list-ol"></i>
+                                <span th:text="${aufgabe.teilaufgaben.size()}">Mehrere</span>
+                            </span>
+                        </td>
+                        <td class="pe-4">
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/kursbetreuer/aufgaben/{id}/bearbeiten(id=${aufgabe.id})}" class="btn btn-sm btn-primary" data-cy="aufgabe-bearbeiten-button" title="Bearbeiten">
+                                    <i class="bi bi-pencil"></i> Bearbeiten
+                                </a>
+                                <a th:href="@{/kursbetreuer/aufgaben/{id}/loeschen(id=${aufgabe.id})}"
+                                   class="btn btn-sm btn-danger"
+                                   data-cy="aufgabe-loeschen-button"
+                                   title="Löschen">
+                                    <i class="bi bi-trash"></i> Löschen
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="d-flex justify-content-between mt-3">
+                <div>
+                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/export(id=${kurseinheitId})}" class="btn btn-outline-primary me-2" data-cy="aufgaben-exportieren-button">
+                        <i class="bi bi-download"></i> Aufgaben exportieren
+                    </a>
+                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/import(id=${kurseinheitId})}" class="btn btn-outline-info me-2" data-cy="aufgaben-importieren-button">
+                        <i class="bi bi-upload"></i> Aufgaben importieren
+                    </a>
+                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/generator(id=${kurseinheitId})}" class="btn btn-outline-secondary" data-cy="aufgabe-generieren-button">
+                        <i class="bi bi-lightbulb"></i> Aufgabe generieren
+                    </a>
+                </div>
+                <div>
+                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}/aufgaben/neu(id=${kurseinheitId})}" class="btn btn-success" data-cy="neue-aufgabe-button">
+                        <i class="bi bi-plus-circle"></i> Neue Aufgabe erstellen
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const kurseinheitId = /*[[${kurseinheitId}]]*/ '0';
+            initSortable();
+            
+            // Event-Listener für HTMX-Ereignisse hinzufügen
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                // Sortable neu initialisieren, wenn die Liste aktualisiert wurde
+                if (evt.target && evt.target.id === 'aufgaben-liste') {
+                    initSortable();
+                }
+            });
+            
+            // HTMX Response-Handler für Fehler
+            document.body.addEventListener('htmx:responseError', function(evt) {
+                console.error('HTMX Fehler bei Reorder:', evt.detail.xhr.responseText);
+                // Spinner verstecken
+                const spinner = document.getElementById('reorder-status');
+                if (spinner) spinner.classList.add('d-none');
+                
+                // Optional: Hier könnte eine Fehlermeldung angezeigt werden
+                alert('Es ist ein Fehler beim Aktualisieren der Reihenfolge aufgetreten.');
+            });
+            
+            function initSortable() {
+                const sortableEl = document.getElementById('aufgaben-sortable');
+                if (!sortableEl) return;
+                
+                // Bestehende Sortable-Instanz zerstören, falls vorhanden
+                if (sortableEl._sortable) {
+                    sortableEl._sortable.destroy();
+                }
+                
+                // Neue Sortable-Instanz erstellen
+                const sortable = new Sortable(sortableEl, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    onStart: function() {
+                        // Optional: Visuelles Feedback beim Start des Drag-Vorgangs
+                    },
+                    onEnd: function(evt) {
+                        // Verhindern, dass die Funktion ausgeführt wird, wenn sich die Position nicht geändert hat
+                        if (evt.oldIndex === evt.newIndex) return;
+                        
+                        // Spinner anzeigen
+                        const spinner = document.getElementById('reorder-status');
+                        if (spinner) spinner.classList.remove('d-none');
+                        
+                        // IDs in neuer Reihenfolge sammeln und validieren
+                        const items = sortableEl.querySelectorAll('.sortable-item');
+                        const ids = Array.from(items)
+                            .map(item => {
+                                const id = parseInt(item.dataset.id);
+                                return isNaN(id) ? null : id;
+                            })
+                            .filter(id => id !== null);
+                        
+                        // Prüfen, ob wir gültige IDs haben
+                        if (ids.length === 0) {
+                            console.error('Keine gültigen IDs gefunden');
+                            if (spinner) spinner.classList.add('d-none');
+                            return;
+                        }
+                        
+                        // HTMX-Anfrage senden
+                        htmx.ajax('POST', `/kursbetreuer/htmx/aufgaben/${kurseinheitId}/reorder`, {
+                            target: '#aufgaben-liste',
+                            swap: 'outerHTML',
+                            values: { ids: ids },
+                            indicator: '#reorder-status'
+                        });
+                    }
+                });
+                
+                // Sortable-Instanz im Element speichern, um sie später zerstören zu können
+                sortableEl._sortable = sortable;
+            }
+        });
+        </script>
+    </div>
+</body>
+</html>

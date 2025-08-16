@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Aufgabe bearbeiten')}">
+    <title>Aufgabe bearbeiten - LLM-Übungssystem</title>
+    <meta name="description" content="Bearbeitungsseite für Übungsaufgaben">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" th:text="${kurseinheit.name}">Kurseinheit</a></li>
+                    <li class="breadcrumb-item active">Aufgabe bearbeiten</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">
+                        <span th:if="${aufgabe.id != null}">Aufgabe bearbeiten</span>
+                        <span th:unless="${aufgabe.id != null}">Neue Aufgabe erstellen</span>
+                    </h1>
+                    <p class="lead">Hier können Sie eine Übungsaufgabe erstellen oder bearbeiten.</p>
+                </div>
+            </div>
+            
+
+            <!-- Aufgaben-Formular -->
+            <form th:id="form-aufgabe"
+                  th:action="@{/kursbetreuer/aufgaben/speichern}"
+                  th:fragment="form-aufgabe"
+                  method="post"
+                  class="needs-validation"
+                  novalidate>
+
+                <!-- Meldungen einbinden -->
+                <div th:replace="~{fragments/messages :: messages}"></div>
+            
+                <!-- Grundinformationen zur Aufgabe -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h2 class="card-title h5 mb-0">Grundinformationen</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Titel -->
+                        <div class="mb-3">
+                            <label for="aufgabe-titel" class="form-label">Titel</label>
+                            <input type="text" class="form-control" 
+                                   id="aufgabe-titel"
+                                   name="titel" 
+                                   th:value="${aufgabe.titel}" 
+                                   placeholder="Titel der Aufgabe"
+                                   data-cy="aufgabe-titel-input"
+                                   required>
+                            <div class="invalid-feedback">
+                                Bitte geben Sie einen Titel für die Aufgabe ein.
+                            </div>
+                        </div>
+                        
+                        <!-- Einfach-Flag (hidden) -->
+                        <div class="mb-3 d-none">
+                            <input type="hidden" name="einfach" id="einfach" th:value="${aufgabe.einfach}">
+                        </div>
+                        
+                        <!-- Allgemeine Aufgabenstellung (nur bei mehr als einer Teilaufgabe) -->
+                        <div th:if="${aufgabe.teilaufgaben.size() > 1}" class="mb-3" id="allgemeine-aufgabenstellung">
+                            <label for="aufgabe-aufgabenstellung" class="form-label">Allgemeine Aufgabenstellung</label>
+                            <span class="form-text d-block mb-2">
+                                Hier können Sie eine allgemeine Beschreibung eingeben, die für alle Teilaufgaben gilt.
+                            </span>
+                            
+                            <!-- Markdown-Editor-Komponente für allgemeine Beschreibung -->
+                            <div th:replace="~{fragments/components/markdown-editor :: markdown-editor(
+                                        textareaId='aufgabe-aufgabenstellung',
+                                        content=${aufgabe.aufgabenText},
+                                        previewId='aufgabe-vorschau',
+                                        teilaufgabeId=null,
+                                        isAllgemein=true
+                                    )}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Teilaufgaben Container -->
+                <div id="teilaufgaben-container" class="mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">
+                                <span th:if="${aufgabe.teilaufgaben.size() > 1}">Teilaufgaben</span>
+                                <span th:if="${aufgabe.teilaufgaben.size() <= 1}">Aufgabenstellung</span>
+                            </h2>
+                            
+                            <!-- Button zum Hinzufügen neuer Teilaufgaben (immer anzeigen) -->
+                            <div>
+                                <button type="button" class="btn btn-sm btn-light"
+                                        hx-post="/kursbetreuer/htmx/aufgabe/add-teilaufgabe"
+                                        hx-target="#form-aufgabe"
+                                        hx-include="form"
+                                        hx-swap="outerHTML"
+                                        data-cy="neue-teilaufgabe-button">
+                                    <i class="bi bi-plus-circle"></i> Neue Teilaufgabe
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Infotext - nur bei mehr als einer Teilaufgabe -->
+                            <div th:if="${aufgabe.teilaufgaben.size() > 1}" class="mb-3" id="teilaufgaben-info">
+                                <p class="text-muted">
+                                    Hier können Sie einzelne Teilaufgaben erstellen und bearbeiten. Jede Teilaufgabe kann eigene Eingabefelder für Antworten enthalten.
+                                </p>
+                            </div>
+
+                            <!-- Wenn mehr als eine Teilaufgabe: Tab-Navigation für Teilaufgaben -->
+                            <div th:if="${aufgabe.teilaufgaben.size() > 1}" class="teilaufgaben-tabs" id="multi-teilaufgaben-view">
+                                <!-- Tab-Navigation für Teilaufgaben -->
+                                <ul class="nav nav-tabs" id="teilaufgaben-nav-tabs" role="tablist" data-cy="teilaufgaben-tabs">
+                                    <li th:each="teilaufgabe, stat : ${aufgabe.teilaufgaben}" 
+                                        class="nav-item" 
+                                        role="presentation"
+                                        th:data-id="${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}"
+                                        th:data-reihenfolge="${teilaufgabe.reihenfolge}"
+                                        th:data-cy="'teilaufgabe-tab-item-' + ${teilaufgabe.reihenfolge}">
+                                        <button class="nav-link sortable-tab"
+                                                th:classappend="${stat.first} ? 'active' : ''"
+                                                th:id="'teilaufgabe-tab-' + ${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}"
+                                                data-bs-toggle="tab"
+                                                th:data-bs-target="'#teilaufgabe-content-' + ${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}"
+                                                type="button"
+                                                role="tab"
+                                                th:data-cy="'teilaufgabe-tab-' + ${teilaufgabe.reihenfolge}"
+                                                th:aria-controls="'teilaufgabe-content-' + ${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}"
+                                                th:aria-selected="${stat.first} ? 'true' : 'false'">
+                                            <i class="bi bi-grip-vertical me-1 text-muted drag-handle"></i>
+                                            <span th:text="'Teilaufgabe ' + ${teilaufgabe.reihenfolge}">Teilaufgabe</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                                <!-- Status-Anzeige für Reordering -->
+                                <div id="teilaufgaben-reorder-status" 
+                                     hx-swap-oob="true"
+                                     class="htmx-indicator spinner-border spinner-border-sm text-primary mt-2 mb-2 d-none" 
+                                     data-cy="teilaufgaben-reorder-status"
+                                     role="status">
+                                    <span class="visually-hidden">Wird aktualisiert...</span>
+                                </div>
+
+                                <!-- Tab-Inhalte für Teilaufgaben -->
+                                <div class="tab-content" id="teilaufgaben-tab-content" data-cy="teilaufgaben-content">
+                                    <div th:each="teilaufgabe, stat : ${aufgabe.teilaufgaben}"
+                                         class="tab-pane fade"
+                                         th:classappend="${stat.first} ? 'show active' : ''"
+                                         th:id="'teilaufgabe-content-' + ${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}"
+                                         th:data-cy="'teilaufgabe-content-' + ${teilaufgabe.reihenfolge}"
+                                         role="tabpanel"
+                                         th:aria-labelledby="'teilaufgabe-tab-' + ${teilaufgabe.id != null ? teilaufgabe.id : teilaufgabe.reihenfolge}">
+                                        <!-- Teilaufgabe-Fragment einbinden -->
+                                        <div th:replace="~{fragments/kursbetreuer/teilaufgabe-fragment :: teilaufgabe-fragment(aufgabe=${aufgabe}, teilaufgabe=${teilaufgabe}, mode='edit', teilaufgabenStat=${stat})}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Wenn genau eine Teilaufgabe oder keine: Teilaufgabe ohne Tabs -->
+                            <div th:if="${aufgabe.teilaufgaben.size() <= 1}" id="single-teilaufgabe-view" data-cy="single-teilaufgabe-view">
+                                <!-- Wenn eine Teilaufgabe vorhanden ist -->
+                                <div th:if="${!aufgabe.teilaufgaben.isEmpty()}" id="teilaufgaben-tab-content" data-cy="single-teilaufgabe-content">
+                                    <div th:each="teilaufgabe, stat : ${aufgabe.teilaufgaben}">
+                                        <div th:replace="~{fragments/kursbetreuer/teilaufgabe-fragment :: teilaufgabe-fragment(aufgabe=${aufgabe}, teilaufgabe=${teilaufgabe}, mode='edit', teilaufgabenStat=${stat})}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Wenn keine Teilaufgaben vorhanden sind -->
+                                <div th:if="${aufgabe.teilaufgaben.isEmpty()}" class="text-center p-4 bg-light rounded mb-3">
+                                    <p class="mb-3">Es sind noch keine Teilaufgaben vorhanden.</p>
+                                    <button type="button" class="btn btn-success"
+                                            hx-post="/kursbetreuer/htmx/aufgabe/add-teilaufgabe"
+                                            hx-target="#form-aufgabe"
+                                            hx-include="form"
+                                            hx-swap="outerHTML">
+                                        <i class="bi bi-plus-circle"></i> Erste Teilaufgabe erstellen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aktionen -->
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Zurück zur Kurseinheit
+                        </a>
+                        <!-- Nur anzeigen, wenn die Aufgabe bereits gespeichert wurde -->
+                        <a th:if="${aufgabe.id != null}" th:href="@{/kursbetreuer/aufgaben/{id}/export(id=${aufgabe.id})}"
+                           class="btn btn-outline-primary" data-cy="aufgabe-exportieren-button">
+                            <i class="bi bi-download"></i> Aufgabe exportieren
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" data-cy="aufgabe-speichern-button">
+                        <i class="bi bi-save"></i> Aufgabe speichern
+                    </button>
+                </div>
+                
+                <!-- Hidden Fields -->
+                <input type="hidden" name="kurseinheitId" th:value="${kurseinheit.id}">
+                <input type="hidden" name="id" th:value="${aufgabe.id}">
+            </form>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <!-- Styles für Sortable Tabs -->
+    <style>
+        #teilaufgaben-nav-tabs .sortable-ghost {
+            background-color: #f8f9fa;
+            opacity: 0.7;
+        }
+        #teilaufgaben-nav-tabs .drag-handle {
+            cursor: grab;
+        }
+        #teilaufgaben-nav-tabs .drag-handle:active {
+            cursor: grabbing;
+        }
+        #teilaufgaben-nav-tabs .nav-item {
+            display: flex;
+        }
+        
+        /* Versteckt Elemente mit der Klasse .answer */
+        .answer {
+            display: none;
+        }
+    </style>
+    
+    <!-- Einbinden der benutzerdefinierten Scripts -->
+    <script th:inline="javascript">
+        
+        // Globale Variable für das Tracking des Initialisierungsstatus
+        let tabsSortableInitialized = false;
+        
+        // Initialisierung der Eingabefeld-Container für vorhandene Teilaufgaben
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisiere Sortable auf der Seite
+            initializePage();
+            
+            // Event-Listener für HTMX-Ereignisse hinzufügen
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                console.log('HTMX afterSwap Event:', evt.detail.target.id);
+
+                // Überprüfen, ob das form-aufgabe Element ausgetauscht wurde
+                if (evt.detail.target && evt.detail.target.tagName === 'FORM') {
+                    console.log('Form wurde aktualisiert, initialisiere Sortable neu');
+                    
+                    initializePage();
+                }
+            });
+            
+            // HTMX Response-Handler für Fehler
+            document.body.addEventListener('htmx:responseError', function(evt) {
+                console.error('HTMX Fehler bei Reorder:', evt.detail.xhr.responseText);
+                // Spinner verstecken
+                const spinner = document.getElementById('teilaufgaben-reorder-status');
+                if (spinner) spinner.classList.add('d-none');
+                
+                // Fehlermeldung anzeigen
+                alert('Es ist ein Fehler beim Aktualisieren der Reihenfolge aufgetreten.');
+            });
+        });
+        
+        /**
+         * Initialisiert alle Komponenten der Seite
+         */
+        function initializePage() {
+            // Aufgaben-ID aus dem Formular extrahieren
+            const aufgabeIdElement = document.querySelector('input[name="id"]');
+            if (!aufgabeIdElement) return;
+            
+            const aufgabeId = aufgabeIdElement.value;
+            
+            // Form-Validierung initialisieren
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Sortable für Teilaufgaben-Tabs initialisieren
+            initTabsSortable(aufgabeId);
+        }
+        
+        /**
+         * Initialisiert die Sortable-Funktionalität für die Teilaufgaben-Tabs
+         * @param {string} aufgabeId - Die ID der Aufgabe
+         */
+        function initTabsSortable(aufgabeId) {
+            const sortableEl = document.getElementById('teilaufgaben-nav-tabs');
+            if (!sortableEl || document.querySelectorAll('#teilaufgaben-nav-tabs .nav-item').length <= 1) {
+                return; // Nichts zu sortieren, wenn weniger als 2 Tabs vorhanden sind
+            }
+            
+            // Bestehende Sortable-Instanz zerstören, falls vorhanden
+            if (sortableEl._sortable) {
+                sortableEl._sortable.destroy();
+            }
+            
+            // Neue Sortable-Instanz erstellen
+            const sortable = new Sortable(sortableEl, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                draggable: '.nav-item',
+                onStart: function() {
+                    // Optional: Visuelles Feedback beim Start des Drag-Vorgangs
+                },
+                onEnd: function(evt) {
+                    // Verhindern, dass die Funktion ausgeführt wird, wenn sich die Position nicht geändert hat
+                    if (evt.oldIndex === evt.newIndex) return;
+                    
+                    // Spinner anzeigen
+                    const spinner = document.getElementById('teilaufgaben-reorder-status');
+                    if (spinner) spinner.classList.remove('d-none');
+                    
+                    // IDs in neuer Reihenfolge sammeln und validieren
+                    const items = sortableEl.querySelectorAll('.nav-item');
+                    const ids = Array.from(items)
+                        .map(item => {
+                            const id = parseInt(item.dataset.id);
+                            return isNaN(id) ? null : id;
+                        })
+                        .filter(id => id !== null);
+                    
+                    // Prüfen, ob wir gültige IDs haben
+                    if (ids.length === 0) {
+                        console.error('Keine gültigen IDs gefunden');
+                        if (spinner) spinner.classList.add('d-none');
+                        return;
+                    }
+
+                    // Formular-Daten erfassen
+                    const formEl = document.getElementById('form-aufgabe');
+                    const formData = new FormData(formEl);
+                    
+                    // IDs zur FormData hinzufügen (als separate Array-Einträge)
+                    ids.forEach(id => {
+                        formData.append('ids[]', id);
+                    });
+                    
+                    // HTMX-Anfrage mit allen Formulardaten senden
+                    htmx.ajax('POST', `/kursbetreuer/htmx/teilaufgabe/${aufgabeId}/reorder`, {
+                        target: '#form-aufgabe',
+                        swap: 'outerHTML',
+                        values: formData,
+                        indicator: '#teilaufgaben-reorder-status'
+                    });
+                }
+            });
+            
+            // Sortable-Instanz im Element speichern, um sie später zerstören zu können
+            sortableEl._sortable = sortable;
+        }
+    </script>
+    
+    <!-- Script zum Initialisieren des Markdown-Editors -->
+    <script th:replace="~{fragments/kursbetreuer/teilaufgabe-fragment :: teilaufgabe-script}"></script>
+</body>
+</html>

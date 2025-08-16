@@ -1,0 +1,54 @@
+package de.fuh.kn.webapp.aufgabenverwaltung.dto;
+
+import de.fuh.kn.webapp.common.dto.BaseDTO;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * DTO für die Teilaufgabe-Entität.
+ * Enthält alle relevanten Informationen für eine Teilaufgabe.
+ */
+@Getter
+@Setter
+public class TeilaufgabeDto extends BaseDTO {
+
+    /**
+     * Die Reihenfolge der Teilaufgabe innerhalb der Aufgabe.
+     */
+    private Integer reihenfolge;
+    
+    /**
+     * Die Aufgabenstellung im Markdown-Format.
+     * Enthält auch die Platzhalter für die Eingabefelder.
+     */
+    private String aufgabenstellungMarkdown;
+    
+    /**
+     * Die Musterlösung für die Felder der Aufgabe.
+     * Schlüssel ist der Name des Feldes, Wert ist die erwartete Lösung.
+     */
+    private Map<String, String> musterloesungFelder = new HashMap<>();
+    
+    /**
+     * Die Bewertungshinweise für die Aufgabe.
+     */
+    private String musterloesungBewertungshinweise;
+    
+    /**
+     * Die ID der zugehörigen Aufgabe.
+     */
+    private Long aufgabeId;
+
+    @Override
+    public String getEntityTypeName() {
+        return "Teilaufgabe";
+    }
+
+    @Override
+    public String getEntityDisplayName() {
+        return this.aufgabeId+" "+this.reihenfolge;
+    }
+}

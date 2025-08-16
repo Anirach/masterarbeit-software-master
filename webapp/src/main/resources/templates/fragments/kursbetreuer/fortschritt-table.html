@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Fortschrittstabelle Fragment -->
+<div th:fragment="fortschritt-table(fortschrittsPage, kursId)">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Studentenfortschritt</h5>
+                <span class="badge bg-secondary">
+                    <span th:text="${fortschrittsPage.totalElements}"></span> Belegungen
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div th:if="${fortschrittsPage.empty}" class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle"></i> Keine Belegungen gefunden.
+            </div>
+            
+            <div th:if="${!fortschrittsPage.empty}" class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Status</th>
+                            <th class="text-center">Fortschritt</th>
+                            <th class="text-center">Teilaufgaben</th>
+                            <th class="text-center">Chat-Nachrichten</th>
+                            <th class="text-center">KI-Kosten</th>
+                            <th>Letzte Aktivität</th>
+                            <th class="text-center">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="fortschritt : ${fortschrittsPage.content}" data-cy="progress-row">
+                            <td>
+                                <strong data-cy="student-name" th:text="${fortschritt.studentName}"></strong>
+                            </td>
+                            <td>
+                                <span th:if="${fortschritt.aktiv}" class="badge bg-success">Aktiv</span>
+                                <span th:unless="${fortschritt.aktiv}" class="badge bg-secondary">Inaktiv</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="progress progress-thick" data-cy="progress-bar-container">
+                                    <div class="progress-bar" role="progressbar" 
+                                         data-cy="progress-bar"
+                                         th:style="'width: ' + ${fortschritt.fortschrittProzent} + '%'"
+                                         th:attr="aria-valuenow=${fortschritt.fortschrittProzent}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        <span data-cy="progress-percentage" th:text="${#numbers.formatDecimal(fortschritt.fortschrittProzent, 0, 0)} + '%'"></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info" data-cy="tasks-completed">
+                                    <span th:text="${fortschritt.abgeschlosseneAufgaben}"></span>
+                                    /
+                                    <span th:text="${fortschritt.gesamtAufgaben}"></span>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary" data-cy="chat-messages-count" th:text="${fortschritt.anzahlNachrichten}"></span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-warning text-dark">
+                                    $ <span th:text="${#numbers.formatDecimal(fortschritt.aiKostenGesamt, 1, 2)}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <small th:if="${fortschritt.letzteAktivitaet != null}"
+                                       th:text="${#temporals.format(fortschritt.letzteAktivitaet, 'dd.MM.yyyy HH:mm')}">
+                                </small>
+                                <small th:unless="${fortschritt.letzteAktivitaet != null}" class="text-muted">
+                                    Keine Aktivität
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <a th:href="@{/kursbetreuer/fortschritt/student/{belegungId}(belegungId=${fortschritt.belegungId})}"
+                                   class="btn btn-sm btn-outline-primary" data-cy="view-details-button" th:title="#{action.details}">
+                                    <i class="bi bi-eye"></i> <span th:text="#{action.details}">Details</span>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${fortschrittsPage.totalPages > 1}" class="mt-3">
+                <nav aria-label="Seitennavigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${fortschrittsPage.first} ? 'disabled'">
+                            <a class="page-link" 
+                               th:href="@{/kursbetreuer/fortschritt/kurs/{kursId}(kursId=${kursId}, page=${fortschrittsPage.number - 1}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-get th:attr="hx-get=@{/kursbetreuer/fortschritt/htmx/kurs/{kursId}(kursId=${kursId}, page=${fortschrittsPage.number - 1}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-target="#fortschritt-table-container"
+                               tabindex="-1">
+                                <span th:text="#{action.back}">Zurück</span>
+                            </a>
+                        </li>
+                        
+                        <li th:each="pageNum : ${#numbers.sequence(0, fortschrittsPage.totalPages - 1)}"
+                            class="page-item" th:classappend="${pageNum == fortschrittsPage.number} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/kursbetreuer/fortschritt/kurs/{kursId}(kursId=${kursId}, page=${pageNum}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-get th:attr="hx-get=@{/kursbetreuer/fortschritt/htmx/kurs/{kursId}(kursId=${kursId}, page=${pageNum}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-target="#fortschritt-table-container"
+                               th:text="${pageNum + 1}">
+                            </a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${fortschrittsPage.last} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/kursbetreuer/fortschritt/kurs/{kursId}(kursId=${kursId}, page=${fortschrittsPage.number + 1}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-get th:attr="hx-get=@{/kursbetreuer/fortschritt/htmx/kurs/{kursId}(kursId=${kursId}, page=${fortschrittsPage.number + 1}, size=${fortschrittsPage.size}, search=${param.search}, nurAktiv=${param.nurAktiv})}"
+                               hx-target="#fortschritt-table-container">
+                                Weiter
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

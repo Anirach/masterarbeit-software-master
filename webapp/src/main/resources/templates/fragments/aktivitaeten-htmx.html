@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- HTMX-Fragment für filterbare und paginierbare Aktivitätsliste -->
+<div th:fragment="aktivitaeten-container(aktivitaeten, titel, showAllUsers, nutzerId, isKursbetreuer)">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="card-title h5 mb-0" th:text="${titel ?: 'Aktivitäten'}">Aktivitäten</h2>
+            <span id="filter-indicator" class="htmx-indicator spinner-border spinner-border-sm text-light"
+                  role="status">
+<span class="visually-hidden">Laden...</span>
+</span>
+        </div>
+        <div class="card-body">
+            <!-- Filter-Form mit AktivitaetFilterDTO als "filter" -->
+            <form id="aktivitaeten-filter-form" hx-post th:attr="hx-post=@{/aktivitaeten/htmx/filter}" hx-target="#aktivitaeten-content" hx-indicator="#filter-indicator">
+                <div class="aktivitaeten-filter mb-4">
+                    <div class="row g-3">
+                        <!-- Hauptsuchfeld (immer sichtbar) -->
+                        <div class="col-md-9">
+                            <div class="input-group">
+                                <input type="text" id="suchbegriffFilter" name="suchbegriff" class="form-control"
+                                       placeholder="Nach Aktivitäten suchen..."
+                                       hx-trigger="keyup changed delay:500ms, search"
+                                       th:attr="hx-post=@{/aktivitaeten/htmx/filter}"
+                                       data-cy="aktivitaeten-suchbegriff"
+                                >
+                                <button type="button" class="btn btn-outline-secondary"
+                                        th:attr="hx-post=@{/aktivitaeten/htmx/filter}"
+                                        hx-target="#aktivitaeten-content"
+                                        data-cy="aktivitaeten-filter-reset"
+                                        onclick="resetFilters()">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Button für erweiterte Filter -->
+                        <div class="col-md-3 d-flex align-items-center justify-content-end">
+                            <button type="button" id="toggleFilterBtn" class="btn btn-outline-primary" onclick="toggleAdvancedFilters()" data-cy="aktivitaeten-erweiterte-filter">
+                                <i class="bi bi-sliders"></i> Weitere Suchfilter anzeigen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Erweiterte Filter (standardmäßig ausgeblendet) -->
+                    <div id="advancedFilters" class="row g-3 mt-2 hide-initially">
+                        <!-- Aktivitätstyp Filter -->
+                        <div class="col-md-4">
+                            <label for="aktivitaetsTypFilter" class="form-label">Aktivitätstyp</label>
+                            <select id="aktivitaetsTypFilter" name="aktivitaetsTyp" class="form-select"
+                                    hx-trigger="change"
+                                    hx-post
+                                    th:attr="hx-post=@{/aktivitaeten/htmx/filter}"
+                                    hx-target="#aktivitaeten-content"
+                                    hx-indicator="#filter-indicator"
+                                    data-cy="aktivitaeten-typ-filter">
+                                <option value="">Alle Aktivitätstypen</option>
+                                <option
+                                        th:each="status : ${T(de.fuh.kn.webapp.persistence.entity.AktivitaetsTyp).values()}"
+                                        th:value="${status}"
+                                        th:text="${status.displayName}"
+                                ></option>
+                            </select>
+                        </div>
+
+                        <!-- Datumsfilter für Zeitraum von-bis -->
+                        <div class="col-md-4">
+                            <label for="startDatumFilter" class="form-label">Von Datum</label>
+                            <input type="date" id="startDatumFilter" name="startDatum" class="form-control"
+                                   th:attr="hx-post=@{/aktivitaeten/htmx/filter}"
+                                   hx-trigger="change"
+                                   hx-target="#aktivitaeten-content"
+                                   hx-indicator="#filter-indicator"
+                                   data-cy="aktivitaeten-von-datum">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="endDatumFilter" class="form-label">Bis Datum</label>
+                            <input type="date" id="endDatumFilter" name="endDatum" class="form-control"
+                                   th:attr="hx-post=@{/aktivitaeten/htmx/filter}"
+                                   hx-trigger="change"
+                                   hx-target="#aktivitaeten-content"
+                                   hx-indicator="#filter-indicator"
+                                   data-cy="aktivitaeten-bis-datum">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Versteckte Felder für nutzerId, showAllUsers und Paginierung -->
+                <input type="hidden" id="aktivitaeten-nutzerId" name="nutzerId" th:value="${nutzerId}">
+                <input type="hidden" id="aktivitaeten-showAllUsers" name="showAllUsers" th:value="${showAllUsers}">
+                <input type="hidden" id="aktivitaeten-page" name="page" value="0">
+                <input type="hidden" id="aktivitaeten-size" name="size" value="10">
+            </form>
+
+            <hr/>
+
+            <!-- Aktivitätsinhalt (wird durch HTMX aktualisiert) -->
+            <div id="aktivitaeten-content">
+                <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-content(${aktivitaeten}, ${showAllUsers}, ${nutzerId}, true, ${isKursbetreuer})}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript für die Filter -->
+    <script>
+        function resetFilters() {
+            // Alle Filter zurücksetzen
+            document.getElementById('aktivitaetsTypFilter').value = '';
+            document.getElementById('startDatumFilter').value = '';
+            document.getElementById('endDatumFilter').value = '';
+            document.getElementById('suchbegriffFilter').value = '';
+            
+            // Seite auf 0 zurücksetzen
+            document.getElementById('aktivitaeten-page').value = '0';
+            
+            // Formular auslösen
+            htmx.trigger('#aktivitaeten-filter-form', 'submit');
+            
+            // Erweiterte Filter ausblenden
+            document.getElementById('advancedFilters').classList.add('hide-initially');
+            updateToggleButtonText();
+        }
+        
+        function toggleAdvancedFilters() {
+            const filtersDiv = document.getElementById('advancedFilters');
+            if (filtersDiv.classList.contains('hide-initially')) {
+                filtersDiv.classList.remove('hide-initially');
+                filtersDiv.style.display = 'flex';
+            } else {
+                filtersDiv.classList.add('hide-initially');
+                filtersDiv.style.display = '';
+            }
+            updateToggleButtonText();
+        }
+        
+        function updateToggleButtonText() {
+            const btn = document.getElementById('toggleFilterBtn');
+            const filtersDiv = document.getElementById('advancedFilters');
+            
+            if (filtersDiv.classList.contains('hide-initially')) {
+                btn.innerHTML = '<i class="bi bi-sliders"></i> Weitere Suchfilter anzeigen';
+            } else {
+                btn.innerHTML = '<i class="bi bi-sliders"></i> Suchfilter ausblenden';
+            }
+        }
+        
+        function setPage(pageNumber) {
+            document.getElementById('aktivitaeten-page').value = pageNumber;
+            htmx.trigger('#aktivitaeten-filter-form', 'submit');
+        }
+    </script>
+</div>
+
+<!-- Fragment für den Inhalt mit Pagination -->
+<div th:fragment="aktivitaeten-content(aktivitaeten, showAllUsers, nutzerId, showPagination, isKursbetreuer)">
+
+    <div class="container py-1" data-cy="aktivitaeten-container">
+        <div th:each="aktivitaet, iterStat : ${aktivitaeten.content}" class="mb-4 d-flex align-items-start" data-cy="aktivitaet-item">
+            <div class="icon-circle bg-primary me-3">
+                <i class="bi" th:class="${aktivitaet.aktivitaetsTyp.iconClass}"></i>
+            </div>
+            <div class="card w-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted" th:text="${#temporals.format(aktivitaet.zeitpunkt, 'dd.MM.yyyy HH:mm')}">2025-05-02 14:23</small>
+
+                        <!-- UserLabel nur anzeigen, wenn Aktivitäten aller Nutzer angezeigt werden ODER wenn die Aktivität von einem anderen Nutzer als dem angezeigten durchgeführt wurde -->
+                        <div class="user-label" th:if="${aktivitaet.nutzerName != null && ((showAllUsers == true) || aktivitaet.nutzerId != nutzerId)}" data-cy="aktivitaet-user">
+                            <i class="bi bi-person-circle"></i> <span th:text="${aktivitaet.nutzerName}">admin user</span>
+                        </div>
+                    </div>
+                    <h5 class="card-title mb-1" th:text="${aktivitaet.aktivitaetsTyp.displayName}" data-cy="aktivitaet-title">Login</h5>
+                    <p class="card-text mb-0" th:text="${aktivitaet.beschreibung}" data-cy="aktivitaet-description">User logged in from web portal.</p>
+
+                    <th:block th:if="${aktivitaet.referenzTyp != null && aktivitaet.referenzId != null}" th:switch="${aktivitaet.referenzTyp}">
+                        <!-- Sonderregel: Student-Badge nur anzeigen, wenn alle Nutzer gezeigt werden -->
+                        <a th:case="'Student'"
+                           th:href="@{/kursbetreuer/nutzer/student/{id}(id=${aktivitaet.referenzId})}"
+                           th:if="${showAllUsers || aktivitaet.referenzId != nutzerId}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i class="bi bi-person-fill me-1"></i>Student:
+                            <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <a th:case="'Kursbetreuer'"
+                           th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}(id=${aktivitaet.referenzId})}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i
+                                class="bi bi-person-badge-fill me-1"></i>Kursbetreuer: <span
+                                th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <a th:case="'Kurs'" th:href="@{/kursbetreuer/kurse/{id}(id=${aktivitaet.referenzId})}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i class="bi bi-book-fill me-1"></i>Kurs:
+                            <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <a th:case="'Kurseinheit'"
+                           th:href="@{/kursbetreuer/kurse/kurseinheit/{id}(id=${aktivitaet.referenzId})}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i class="bi bi-journal-text me-1"></i>Kurseinheit:
+                            <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <a th:case="'Kursmaterial'"
+                           th:href="@{/kursbetreuer/kurse/kursmaterial/{id}(id=${aktivitaet.referenzId})}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i
+                                class="bi bi-file-earmark-text me-1"></i>Kursmaterial: <span
+                                th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <a th:case="'Aufgabe'"
+                           th:href="@{/kursbetreuer/aufgaben/{id}/bearbeiten(id=${aktivitaet.referenzId})}"
+                           class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i class="bi bi-card-list me-1"></i>Aufgabe:
+                            <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        <th:block th:case="'Teilaufgabe'">
+                            <a th:if="${isKursbetreuer}"
+                               th:href="@{/kursbetreuer/fortschritt/student/{belegungId}(belegungId=${aktivitaet.belegungId})}"
+                               class="badge bg-primary badge-link" data-cy="aktivitaet-badge">
+                                <i class="bi bi-check-square me-1"></i>Teilaufgabe:
+                                <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span>
+                            </a>
+                            <a th:unless="${isKursbetreuer}"
+                               th:href="@{/student/aufgaben/{aufgabeId}(aufgabeId=${aktivitaet.parentAufgabeId ?: aktivitaet.referenzId})}"
+                               class="badge bg-primary badge-link" data-cy="aktivitaet-badge"><i class="bi bi-check-square me-1"></i>Teilaufgabe:
+                                <span th:text="${aktivitaet.referenzName ?: aktivitaet.referenzId}"></span></a>
+                        </th:block>
+                    </th:block>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${aktivitaeten.content.empty}" class="text-center py-4">
+            <span class="text-muted">Keine Aktivitäten vorhanden</span>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${!aktivitaeten.content.empty && showPagination}" class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <span class="text-muted">
+                Zeige <span th:text="${aktivitaeten.numberOfElements}">10</span> von
+                <span th:text="${aktivitaeten.totalElements}" data-cy="aktivitaeten-anzahl">100</span> Einträgen
+            </span>
+        </div>
+        <nav aria-label="Aktivitäten-Pagination">
+            <ul class="pagination mb-0">
+                <!-- Vorherige Seite Button -->
+                <li th:class="${aktivitaeten.first ? 'page-item disabled' : 'page-item'}">
+                    <a class="page-link" href="#"
+                       th:onclick="'setPage(' + ${aktivitaeten.number - 1} + '); return false;'"
+                       aria-label="Vorherige">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Seitenzahlen -->
+                <li th:each="i : ${#numbers.sequence(0, aktivitaeten.totalPages - 1)}"
+                    th:if="${i >= aktivitaeten.number - 2 && i <= aktivitaeten.number + 2}"
+                    th:class="${i == aktivitaeten.number ? 'page-item active' : 'page-item'}">
+                    <a class="page-link" href="#"
+                       th:text="${i + 1}"
+                       th:onclick="'setPage(' + ${i} + '); return false;'">1</a>
+                </li>
+
+                <!-- Nächste Seite Button -->
+                <li th:class="${aktivitaeten.last ? 'page-item disabled' : 'page-item'}">
+                    <a class="page-link" href="#"
+                       th:onclick="'setPage(' + ${aktivitaeten.number + 1} + '); return false;'"
+                       aria-label="Nächste"
+                       data-cy="aktivitaeten-nextpage">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Fragment für eine komplette Dashboard-Karte mit Aktivitäten -->
+<div th:fragment="aktivitaeten-dashboard-karte(aktivitaeten, showAllUsers, userId, titel, isKursbetreuer)">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title h5 mb-0" th:text="${titel ?: (showAllUsers ? 'Systemaktivitäten' : 'Meine Aktivitäten')}">Aktivitäten</h2>
+        </div>
+        <div class="card-body p-3">
+            <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-content(${aktivitaeten}, ${showAllUsers}, ${userId}, false, ${isKursbetreuer})}"></div>
+
+            <div class="text-center" th:if="${showAllUsers}">
+                <a th:href="@{/aktivitaeten}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-list me-1"></i> Alle Aktivitäten anzeigen
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

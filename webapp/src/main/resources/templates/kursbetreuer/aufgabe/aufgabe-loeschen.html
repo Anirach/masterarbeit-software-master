@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Aufgabe löschen - Bestätigung')}">
+    <title>Aufgabe löschen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurseinheit.kursId})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" th:text="${kurseinheit.name}">Kurseinheit</a></li>
+                    <li class="breadcrumb-item active">Aufgabe löschen</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5 text-danger">Aufgabe löschen</h1>
+                    <p class="lead">Bitte bestätigen Sie das Löschen der Aufgabe.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow-sm border-danger">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="'Aufgabe: ' + ${aufgabe.titel}">Aufgabentitel</h5>
+                            
+                            <div class="alert alert-warning mt-3">
+                                <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bitte beachten Sie</h6>
+                                <p>Das Löschen der Aufgabe hat folgende Konsequenzen:</p>
+                                <ul>
+                                    <li>Die Aufgabe <strong th:text="${aufgabe.titel}">Aufgabentitel</strong> wird vollständig entfernt</li>
+                                    <li th:if="${!aufgabe.einfach}">
+                                        Alle <span th:text="${aufgabe.teilaufgaben.size()}">0</span> zugehörigen Teilaufgaben werden gelöscht
+                                    </li>
+                                    <li>Alle Lösungsversuche von Studierenden für diese Aufgabe gehen verloren</li>
+                                    <li>Die Aufgabe verschwindet aus der Aufgabenliste der Kurseinheit</li>
+                                </ul>
+                                <p class="mb-0"><strong>Diese Aktion kann nicht rückgängig gemacht werden!</strong></p>
+                            </div>
+                            
+                            <form th:action="@{/kursbetreuer/aufgaben/{id}/loeschen(id=${aufgabe.id})}" method="post" class="mt-4" data-cy="aufgabe-loeschen-form">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="confirmDelete" name="confirmDelete" data-cy="confirm-delete-checkbox" required>
+                                    <label class="form-check-label" for="confirmDelete">
+                                        Ich bestätige, dass ich die Aufgabe <strong th:text="${aufgabe.titel}">Aufgabentitel</strong> und alle zugehörigen Daten unwiderruflich löschen möchte.
+                                    </label>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" class="btn btn-outline-secondary" data-cy="abbrechen-button">
+                                        <i class="bi bi-arrow-left"></i> Zurück zur Kurseinheit
+                                    </a>
+                                    <button type="submit" class="btn btn-danger" data-cy="bestaetigen-button">
+                                        <i class="bi bi-trash"></i> Aufgabe unwiderruflich löschen
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Alternative</h5>
+                            <p class="card-text">Anstatt die Aufgabe zu löschen, könnten Sie:</p>
+                            <ul class="card-text">
+                                <li>Die Aufgabe bearbeiten und verbessern</li>
+                                <li>Die Aufgabe an eine andere Stelle in der Kurseinheit verschieben</li>
+                                <li>Die Aufgabe in eine andere Kurseinheit verschieben</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

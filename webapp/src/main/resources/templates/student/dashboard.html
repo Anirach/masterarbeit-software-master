@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Dashboard')}">
+    <title>Dashboard - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Meine Kurse</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Meine Kurse</h1>
+                    <p class="lead">Willkommen zurück! Hier sehen Sie Ihre belegten Kurse und Ihren Lernfortschritt.</p>
+                </div>
+            </div>
+            
+            <!-- Status-Zusammenfassung -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Belegte Kurse</h5>
+                            <p class="display-4" th:text="${anzahlBelegteKurse}">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Aktive Kurse</h5>
+                            <p class="display-4" th:text="${anzahlAktiveKurse}">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gelöste Aufgaben</h5>
+                            <p class="display-4" th:text="${anzahlGeloesterAufgaben}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kursliste -->
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Meine Kurse</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Wenn Kurse vorhanden sind, werden sie hier angezeigt -->
+                            <div th:if="${!#lists.isEmpty(aktiveFortschritte)}" class="list-group list-group-flush border-0">
+                                <th:block th:each="fortschritt : ${aktiveFortschritte}">
+                                    <div class="list-group-item list-group-item-action p-3 cursor-pointer"
+                                         th:onclick="'window.location.href=\'' + @{'/student/kurs/' + ${fortschritt.kurs.id}} + '\''">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h5 class="mb-0 text-body" th:text="${fortschritt.kurs.name}">Kursname</h5>
+                                            <small class="text-muted" th:text="'Fortschritt: ' + ${fortschritt.fortschrittProzent} + '%'">Fortschritt: 25%</small>
+                                        </div>
+
+                                        <div class="progress mb-2" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                 th:style="'width: ' + ${fortschritt.fortschrittProzent} + '%'"
+                                                 th:attr="aria-valuenow=${fortschritt.fortschrittProzent}"
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small th:if="${fortschritt.gesamtTeilaufgaben > 0}" th:text="${fortschritt.abgeschlosseneTeilaufgaben} + ' von ' + ${fortschritt.gesamtTeilaufgaben} + ' Aufgaben gelöst'" class="text-muted">5 von 20 Aufgaben gelöst</small>
+                                            <a th:href="@{'/student/kurs/' + ${fortschritt.kurs.id}}"
+                                                onclick="event.stopPropagation();"
+                                                class="btn btn-sm btn-primary ms-auto">Zum Kurs</a>
+                                        </div>
+                                    </div>
+                                </th:block>
+                            </div>
+
+                            <!-- Wenn keine Kurse vorhanden sind -->
+                            <div th:if="${#lists.isEmpty(aktiveFortschritte)}" class="p-4 text-center">
+                                <p class="text-muted mb-3">Sie haben derzeit keine aktiven Kurse belegt.</p>
+                                <p>Kurse werden von der Kursbetreuung zugewiesen. Bitte wenden Sie sich an Ihre Kursbetreuung,
+                                   falls Sie Zugriff auf einen Kurs benötigen.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Abgelaufene Kurse, falls vorhanden -->
+            <div th:if="${!#lists.isEmpty(inaktiveFortschritte)}" class="row mb-3">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h2 class="card-title h5 mb-0">Abgelaufene/Inaktive Kurse</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Liste abgelaufener Kurse -->
+                            <div class="list-group list-group-flush border-0">
+                                <th:block th:each="fortschritt : ${inaktiveFortschritte}">
+                                    <div class="list-group-item list-group-item-action p-3 cursor-pointer"
+                                         th:onclick="'window.location.href=\'' + @{'/student/kurs/' + ${fortschritt.kurs.id}} + '\''">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h5 class="mb-0 text-body" th:text="${fortschritt.kurs.name}">Kursname</h5>
+                                            <small class="text-muted">Inaktiv</small>
+                                        </div>
+
+                                        <div class="progress mb-2" style="height: 5px;">
+                                            <div class="progress-bar bg-secondary" role="progressbar"
+                                                 th:style="'width: ' + ${fortschritt.fortschrittProzent} + '%'"
+                                                 th:attr="aria-valuenow=${fortschritt.fortschrittProzent}"
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small th:if="${fortschritt.gesamtTeilaufgaben > 0}" th:text="${fortschritt.abgeschlosseneTeilaufgaben} + ' von ' + ${fortschritt.gesamtTeilaufgaben} + ' Aufgaben gelöst'" class="text-muted">5 von 20 Aufgaben gelöst</small>
+                                            <a th:href="@{'/student/kurs/' + ${fortschritt.kurs.id}}"
+                                               onclick="event.stopPropagation();"
+                                               class="btn btn-sm btn-secondary ms-auto">Ansehen</a>
+                                        </div>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fragment für letzte Aktivitäten -->
+            <div class="row mb-3">
+                <div class="col">
+                    <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-dashboard-karte(${aktivitaeten}, false, ${nutzer.id},  'Meine Aktivitäten', false)}"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kurs importieren')}">
+    <title>Kurs importieren - LLM-Übungssystem</title>
+    <meta name="description" content="Import-Seite für Kurse">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item active">Kurs importieren</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kurs importieren</h1>
+                    <p class="lead">Importieren Sie einen Kurs aus einer Datei. Der Import umfasst den Kurs mit allen Kurseinheiten, Materialien und Aufgaben.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Import-Formular -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Datei für Import auswählen</h2>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/kursbetreuer/kurse/import}" 
+                                  method="post" 
+                                  enctype="multipart/form-data"
+                                  class="needs-validation"
+                                  data-cy="kurs-import-form"
+                                  novalidate>
+                                
+                                <div class="mb-4">
+                                    <label for="file-upload" class="form-label">Kurs-Datei auswählen</label>
+                                    <input type="file" class="form-control" id="file-upload" name="file" 
+                                           accept=".json,.zip" required data-cy="file-upload-input">
+                                    <div class="invalid-feedback">
+                                        Bitte wählen Sie eine Datei aus.
+                                    </div>
+                                    <div class="form-text mt-2">
+                                        Unterstützte Dateiformate: JSON (.json), ZIP (.zip)
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h3 class="h6">Hinweise zum Import</h3>
+                                    <ul class="small text-muted">
+                                        <li>JSON-Dateien müssen im korrekten Format vorliegen (exportiert aus diesem System).</li>
+                                        <li>ZIP-Dateien sollten eine kurs.json-Datei und zugehörige Materialien enthalten.</li>
+                                        <li>Der importierte Kurs wird als neuer Kurs angelegt, bestehende Kurse werden nicht überschrieben.</li>
+                                        <li>Der Import kann je nach Größe des Kurses einige Zeit in Anspruch nehmen.</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/kursbetreuer/kursverwaltung}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i> Zurück zur Kursverwaltung
+                                    </a>
+                                    
+                                    <button type="submit" class="btn btn-primary" data-cy="kurs-import-button">
+                                        <i class="bi bi-upload"></i> Kurs importieren
+                                    </button>
+                                </div>
+                                
+                                <!-- Ladeanzeige während des Imports -->
+                                <div id="kurs-import-spinner" class="text-center py-3 mt-3 hide-initially">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Importiere Kurs...</span>
+                                    </div>
+                                    <p class="mt-2">Kurs wird importiert. Dies kann einen Moment dauern...</p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Hilfe und Informationen -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h2 class="card-title h5 mb-0">Informationen zum Import</h2>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">So funktioniert der Import</h3>
+                            <p class="small">Importieren Sie Kurse einfach aus einer vorhandenen JSON- oder ZIP-Datei:</p>
+                            
+                            <h4 class="h6 mt-3">JSON-Import</h4>
+                            <p class="small">JSON-Dateien können folgende Elemente enthalten:</p>
+                            <ul class="small">
+                                <li>Kursdaten mit Namen</li>
+                                <li>Kurseinheiten mit Reihenfolge</li>
+                                <li>Kursmaterialien (Base64-kodiert)</li>
+                                <li>Aufgaben mit Teilaufgaben</li>
+                            </ul>
+                            
+                            <h4 class="h6 mt-3">ZIP-Import</h4>
+                            <p class="small">ZIP-Archive sollten folgende Struktur haben:</p>
+                            <ul class="small">
+                                <li>kurs.json - Die Kursdaten im JSON-Format</li>
+                                <li>Zusätzliche Dateien für Kursmaterialien</li>
+                            </ul>
+                            
+                            <div class="alert alert-info mt-3 small">
+                                <i class="bi bi-info-circle me-2"></i> Tipp: Exportieren Sie zunächst einen bestehenden Kurs, um das erforderliche Format zu sehen.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <!-- Formularvalidierung und Loading-Indikator -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form-Validierung initialisieren
+            const forms = document.querySelectorAll('.needs-validation');
+            const importButton = document.querySelector('[data-cy="kurs-import-button"]');
+            const importSpinner = document.getElementById('kurs-import-spinner');
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        // Nur wenn das Formular gültig ist, den Ladeindikator anzeigen
+                        if (importSpinner) {
+                            importSpinner.classList.remove('hide-initially');
+                        }
+                        
+                        // Optional: Button deaktivieren, um Mehrfachklicks zu verhindern
+                        if (importButton) {
+                            importButton.disabled = true;
+                            importButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importiere...';
+                        }
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        });
+    </script>
+</body>
+</html>

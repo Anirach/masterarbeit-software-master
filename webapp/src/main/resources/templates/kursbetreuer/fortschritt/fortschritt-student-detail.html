@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${studentDetail.studentName} + ' - Fortschrittsdetails')}">
+    <title>Student Fortschrittsdetails - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/dashboard}">Dashboard</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/kursbetreuer/kurse/{id}(id=${studentDetail.kursId})}"
+                           th:text="${studentDetail.kursName}">Kurs</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/kursbetreuer/fortschritt/kurs/{id}(id=${studentDetail.kursId})}"
+                           >Fortschrittsübersicht</a>
+                    </li>
+                    <li class="breadcrumb-item active" th:text="${studentDetail.studentName}">Student</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <!-- Überschrift und Zurück-Button -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="display-5">
+                            <i class="bi bi-person-lines-fill me-2"></i>
+                            Fortschrittsdetails: <span th:text="${studentDetail.studentName}">Max Mustermann</span>
+                        </h1>
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${studentDetail.kursId})}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-people"></i> Belegungen
+                            </a>
+                            <a th:href="@{/kursbetreuer/fortschritt/kurs/{id}(id=${studentDetail.kursId})}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
+                            </a>
+                        </div>
+                    </div>
+                    <p class="text-muted">
+                        <i class="bi bi-envelope me-1"></i>
+                        <span th:text="${studentDetail.studentEmail}">max.mustermann@example.com</span>
+                        <span class="mx-2">•</span>
+                        <i class="bi bi-book me-1"></i>
+                        <span th:text="${studentDetail.kursName}">Kursname</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Fortschritts-Übersicht Karten -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Gesamtfortschritt</h6>
+                                    <h4 class="mb-0" data-cy="overall-progress" th:text="${#numbers.formatDecimal(studentDetail.fortschrittProzent, 1, 1)} + '%'">75.5%</h4>
+                                </div>
+                                <i class="bi bi-graph-up fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Teilaufgaben</h6>
+                                    <h4 class="mb-0" data-cy="tasks-completed-detail">
+                                        <span th:text="${studentDetail.abgeschlosseneTeilaufgaben}">15</span>
+                                        /
+                                        <span th:text="${studentDetail.gesamtTeilaufgaben}">20</span>
+                                    </h4>
+                                </div>
+                                <i class="bi bi-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Chat-Nachrichten</h6>
+                                    <h4 class="mb-0" th:text="${studentDetail.anzahlNachrichten}">42</h4>
+                                </div>
+                                <i class="bi bi-chat-dots fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">KI-Kosten</h6>
+                                    <h4 class="mb-0" th:text="${#numbers.formatDecimal(studentDetail.aiKostenGesamt, 1, 4)} + ' $'">1.25 $</h4>
+                                </div>
+                                <i class="bi bi-cash fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Letzte Aktivität -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-light">
+                        <i class="bi bi-clock me-2"></i>
+                        <strong>Letzte Aktivität:</strong>
+                        <span th:text="${#temporals.format(studentDetail.letzteAktivitaet, 'dd.MM.yyyy HH:mm')}">01.05.2023 14:30</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs für Lösungsversuche und Chats -->
+            <div class="row">
+                <div class="col-12">
+                    <nav>
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            <button class="nav-link active" id="nav-loesungsversuche-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#nav-loesungsversuche" type="button" role="tab" 
+                                    aria-controls="nav-loesungsversuche" aria-selected="true"
+                                    data-cy="tab-solution-attempts">
+                                <i class="bi bi-pencil-square me-2"></i>Lösungsversuche
+                            </button>
+                            <button class="nav-link" id="nav-chats-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#nav-chats" type="button" role="tab" 
+                                    aria-controls="nav-chats" aria-selected="false"
+                                    data-cy="tab-chat-history">
+                                <i class="bi bi-chat-dots me-2"></i>Chat-Verlauf
+                            </button>
+                        </div>
+                    </nav>
+                    <div class="tab-content border border-top-0 p-4" id="nav-tabContent">
+                        <!-- Tab: Lösungsversuche -->
+                        <div class="tab-pane fade show active" id="nav-loesungsversuche" 
+                             role="tabpanel" aria-labelledby="nav-loesungsversuche-tab">
+                            
+                            <div th:if="${studentDetail.teilaufgaben.isEmpty()}" class="text-center py-5">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Es wurden noch keine Lösungsversuche abgegeben.
+                                </div>
+                            </div>
+                            
+                            <!-- Teilaufgaben-Accordion -->
+                            <div th:unless="${studentDetail.teilaufgaben.isEmpty()}" class="accordion" id="teilaufgabenAccordion">
+                                <div th:each="teilaufgabe, stat : ${studentDetail.teilaufgaben}" 
+                                     th:if="${!teilaufgabe.loesungsversuche.isEmpty()}"
+                                     class="accordion-item mb-3">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" th:classappend="${stat.index > 0 ? 'collapsed' : ''}"
+                                                type="button" data-bs-toggle="collapse"
+                                                th:data-bs-target="'#teilaufgabeCollapse' + ${teilaufgabe.teilaufgabeId}"
+                                                th:aria-expanded="${stat.index == 0}"
+                                                th:aria-controls="'teilaufgabeCollapse' + ${teilaufgabe.teilaufgabeId}">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <div>
+                                                    <span class="fw-bold" th:text="${teilaufgabe.kurseinheitName} + ' - ' + ${teilaufgabe.aufgabeTitel}">
+                                                        Kurseinheit - Aufgabe
+                                                    </span>
+                                                    <small class="text-muted ms-2">
+                                                        Teilaufgabe <span th:text="${teilaufgabe.teilaufgabeReihenfolge}">1</span>
+                                                    </small>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge me-2"
+                                                          th:classappend="${teilaufgabe.istAbgeschlossen ? 'bg-success' : (teilaufgabe.istUebersprungen ? 'bg-warning' : 'bg-secondary')}"
+                                                          th:text="${teilaufgabe.istAbgeschlossen ? 'Abgeschlossen' : (teilaufgabe.istUebersprungen ? 'Übersprungen' : 'In Bearbeitung')}">
+                                                        Status
+                                                    </span>
+                                                    <span class="badge bg-primary" th:text="${teilaufgabe.anzahlVersuche} + ' Versuche'">3 Versuche</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div th:id="'teilaufgabeCollapse' + ${teilaufgabe.teilaufgabeId}"
+                                         class="accordion-collapse collapse" th:classappend="${stat.index == 0 ? 'show' : ''}"
+                                         data-bs-parent="#teilaufgabenAccordion">
+                                        <div class="accordion-body">
+                                            <!-- Lösungsversuche für diese Teilaufgabe -->
+                                            <div class="accordion" th:id="'versucheAccordion' + ${teilaufgabe.teilaufgabeId}">
+                                                <div th:each="versuch, vStat : ${teilaufgabe.loesungsversuche}" 
+                                                     class="accordion-item mb-2 border">
+                                                    <h2 class="accordion-header">
+                                                        <button class="accordion-button accordion-button-sm" 
+                                                                th:classappend="${vStat.index > 0 ? 'collapsed' : ''} + ${versuch.istZurueckGesetzt ? ' reset-attempt' : ''}"
+                                                                type="button" data-bs-toggle="collapse"
+                                                                th:data-bs-target="'#versuchCollapse' + ${versuch.id}"
+                                                                th:aria-expanded="${vStat.index == 0}"
+                                                                th:aria-controls="'versuchCollapse' + ${versuch.id}">
+                                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                                <div>
+                                                                    <span class="fw-bold" data-cy="admin-attempt-number" th:text="${'Versuch ' + (teilaufgabe.loesungsversuche.size() - vStat.index)}">Versuch 3</span>
+                                                                    <small class="text-muted ms-2" th:text="${#temporals.format(versuch.zeitpunkt, 'dd.MM.yyyy HH:mm')}">01.05.2023 14:30</small>
+                                                                    <span class="badge bg-danger ms-2" th:if="${versuch.istZurueckGesetzt}">Zurückgesetzt</span>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <span class="badge me-2"
+                                                                          data-cy="admin-attempt-score"
+                                                                          th:classappend="${versuch.bewertungPunkte != null ? (versuch.bewertungPunkte >= 70 ? 'bg-success' : (versuch.bewertungPunkte >= 50 ? 'bg-warning' : 'bg-danger')) : 'bg-secondary'}"
+                                                                          th:text="${versuch.bewertungPunkte != null ? versuch.bewertungPunkte + ' / 100' : 'Keine Bewertung'}">
+                                                                        85 / 100
+                                                                    </span>
+                                                                    <small class="text-muted" th:if="${versuch.kosten != null}" th:text="${#numbers.formatDecimal(versuch.kosten, 1, 4)} + ' $'">0.015 $</small>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div th:id="'versuchCollapse' + ${versuch.id}"
+                                                         class="accordion-collapse collapse" th:classappend="${vStat.index == 0 ? 'show' : ''}"
+                                                         th:data-bs-parent="'#versucheAccordion' + ${teilaufgabe.teilaufgabeId}">
+                                                        <div class="accordion-body">
+                                                            <!-- Status und Punkte -->
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <div>
+                                                                    <span class="badge"
+                                                                          th:classappend="${versuch.istZurueckGesetzt ? 'bg-danger' : (versuch.istAbgeschlossen ? 'bg-success' : (versuch.istUebersprungen ? 'bg-warning' : 'bg-secondary'))}"
+                                                                          th:text="${versuch.istZurueckGesetzt ? 'Zurückgesetzt' : (versuch.istAbgeschlossen ? 'Abgeschlossen' : (versuch.istUebersprungen ? 'Übersprungen' : 'In Bearbeitung'))}">
+                                                                        Abgeschlossen
+                                                                    </span>
+                                                                </div>
+                                                                <div th:if="${versuch.bewertungPunkte != null}">
+                                                                    <div class="progress progress-thin" style="width: 150px;">
+                                                                        <div class="progress-bar" role="progressbar"
+                                                                             th:style="'width: ' + ${versuch.bewertungPunkte} + '%'"
+                                                                             th:classappend="${versuch.bewertungPunkte >= 70 ? 'bg-success' : (versuch.bewertungPunkte >= 50 ? 'bg-warning' : 'bg-danger')}"
+                                                                             th:attr="aria-valuenow=${versuch.bewertungPunkte}"
+                                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Feedback -->
+                                                            <div th:if="${versuch.bewertungFeedback != null}" class="feedback-container p-3 border rounded mb-4" 
+                                                                 th:classappend="${versuch.bewertungPunkte >= 70 ? 'border-success bg-success bg-opacity-10' : (versuch.bewertungPunkte >= 50 ? 'border-warning bg-warning bg-opacity-10' : 'border-danger bg-danger bg-opacity-10')}">
+                                                                <h6>Feedback</h6>
+                                                                <p th:text="${versuch.bewertungFeedback}" class="mb-0">Feedback wird hier angezeigt</p>
+                                                            </div>
+                                                            
+                                                            <!-- Antworten -->
+                                                            <div th:unless="${versuch.loesungFelder.isEmpty()}" class="mt-4">
+                                                                <h6>Antworten des Studenten</h6>
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-sm table-bordered">
+                                                                        <thead class="table-light">
+                                                                            <tr>
+                                                                                <th>Feld</th>
+                                                                                <th>Antwort</th>
+                                                                                <th>Bewertung</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr th:each="entry : ${versuch.loesungFelder}">
+                                                                                <td th:text="${entry.key}">field1</td>
+                                                                                <td>
+                                                                                    <pre class="mb-0 bg-light p-2 rounded scrollable-sm" style="white-space: pre-wrap;" th:text="${entry.value}">Antwort</pre>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <span class="badge" 
+                                                                                          th:if="${versuch.bewertungFelderFarbe != null and versuch.bewertungFelderFarbe.containsKey(entry.key)}"
+                                                                                          th:classappend="${versuch.bewertungFelderFarbe.get(entry.key) == 'green' ? 'bg-success' : (versuch.bewertungFelderFarbe.get(entry.key) == 'yellow' ? 'bg-warning' : 'bg-danger')}"
+                                                                                          th:text="${versuch.bewertungFelderFarbe.get(entry.key) == 'green' ? 'Korrekt' : (versuch.bewertungFelderFarbe.get(entry.key) == 'yellow' ? 'Teilweise korrekt' : 'Nicht korrekt')}">
+                                                                                        Korrekt
+                                                                                    </span>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tab: Chat-Verlauf -->
+                        <div class="tab-pane fade" id="nav-chats" role="tabpanel" aria-labelledby="nav-chats-tab">
+                            
+                            <div th:if="${studentDetail.chats.isEmpty()}" class="text-center py-5">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Es wurden noch keine Chat-Nachrichten ausgetauscht.
+                                </div>
+                            </div>
+                            
+                            <!-- Chat-Accordion -->
+                            <div th:unless="${studentDetail.chats.isEmpty()}" class="accordion" id="chatsAccordion">
+                                <div th:each="chat, cStat : ${studentDetail.chats}" class="accordion-item mb-3">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" th:classappend="${cStat.index > 0 ? 'collapsed' : ''}"
+                                                type="button" data-bs-toggle="collapse"
+                                                th:data-bs-target="'#chatCollapse' + ${chat.chatId}"
+                                                th:aria-expanded="${cStat.index == 0}"
+                                                th:aria-controls="'chatCollapse' + ${chat.chatId}">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <div>
+                                                    <span class="fw-bold" th:text="${chat.kurseinheitName} + ' - ' + ${chat.aufgabeTitel}">
+                                                        Kurseinheit - Aufgabe
+                                                    </span>
+                                                    <small class="text-muted ms-2">
+                                                        Teilaufgabe <span th:text="${chat.teilaufgabeReihenfolge}">1</span>
+                                                    </small>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-info me-2" data-cy="chat-message-count" th:text="${chat.anzahlNachrichten} + ' Nachrichten'">5 Nachrichten</span>
+                                                    <small class="text-muted" th:if="${chat.gesamtKosten != null and chat.gesamtKosten.compareTo(T(java.math.BigDecimal).ZERO) > 0}" 
+                                                           th:text="${#numbers.formatDecimal(chat.gesamtKosten, 1, 4)} + ' $'">0.025 $</small>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div th:id="'chatCollapse' + ${chat.chatId}"
+                                         class="accordion-collapse collapse" th:classappend="${cStat.index == 0 ? 'show' : ''}"
+                                         data-bs-parent="#chatsAccordion">
+                                        <div class="accordion-body">
+                                            <!-- Chat-Nachrichten -->
+                                            <div class="chat-messages-container bg-light rounded p-3">
+                                                <div class="chat-messages-list">
+                                                    <div th:each="nachricht : ${chat.nachrichten}" 
+                                                         class="chat-message" 
+                                                         th:classappend="${nachricht.istSystemNachricht ? 'system-message' : 'student-message'}"
+                                                         data-cy="chat-message-item">
+                                                        <div class="message-sender">
+                                                            <strong th:text="${nachricht.istSystemNachricht ? 'KI-Assistent' : 'Student'}">Sender</strong>
+                                                            <small class="text-muted ms-2" th:text="${#temporals.format(nachricht.zeitpunkt, 'dd.MM.yyyy HH:mm')}">01.05.2023 14:30</small>
+                                                            <small class="text-muted ms-2" th:if="${nachricht.kosten != null and nachricht.kosten.compareTo(T(java.math.BigDecimal).ZERO) > 0}" 
+                                                                   th:text="'(' + ${#numbers.formatDecimal(nachricht.kosten, 1, 4)} + ' $)'">
+                                                                (0.005 $)
+                                                            </small>
+                                                        </div>
+                                                        <!-- Unterschiedliche Rendering für System- und Student-Nachrichten -->
+                                                        <div class="message-content" 
+                                                             th:if="${!nachricht.istSystemNachricht}"
+                                                             th:text="${nachricht.inhalt}">
+                                                            Nachrichteninhalt (Student)
+                                                        </div>
+                                                        <div class="message-content" 
+                                                             th:if="${nachricht.istSystemNachricht}"
+                                                             th:utext="${nachricht.inhaltHtml != null ? nachricht.inhaltHtml : nachricht.inhalt}">
+                                                            Nachrichteninhalt (System, mit Markdown)
+                                                        </div>
+                                                        
+                                                        <!-- Quellenangaben anzeigen -->
+                                                        <div class="message-references" 
+                                                             th:if="${nachricht.istSystemNachricht && nachricht.referenzen != null && !nachricht.referenzen.isEmpty()}">
+                                                            <div class="mt-1 fw-bold small">Quellen:</div>
+                                                            <ul class="list-unstyled small">
+                                                                <li th:each="referenz : ${nachricht.referenzen}">
+                                                                    <i class="bi bi-journal-text"></i>
+                                                                    <span th:text="${referenz.kursMaterialName}">Dateiname</span>
+                                                                    <span th:if="${referenz.seitennummer != null}">
+                                                                        (Seite <span th:text="${referenz.seitennummer}">1</span>)
+                                                                    </span>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Chat-Statistiken -->
+                                            <div class="mt-3 p-2 bg-light rounded">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted">
+                                                            <strong>Letzte Nachricht:</strong>
+                                                            <span th:text="${chat.letzteNachrichtZeitpunkt != null ? #temporals.format(chat.letzteNachrichtZeitpunkt, 'dd.MM.yyyy HH:mm') : 'Keine Nachrichten'}">01.05.2023 15:30</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-6 text-end">
+                                                        <small class="text-muted">
+                                                            <strong>Gesamtkosten:</strong>
+                                                            <span th:text="${chat.gesamtKosten != null ? (#numbers.formatDecimal(chat.gesamtKosten, 1, 4) + ' $') : '0.000 $'}">0.025 $</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+
+    <style>
+        .accordion-button-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .reset-attempt {
+            text-decoration: line-through;
+            opacity: 0.8;
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+
+        .reset-attempt:not(.collapsed) {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        /* Chat-spezifische Anpassungen für die Fortschrittsansicht */
+        .accordion-body .chat-messages-container {
+            max-height: 400px;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kurs exportieren')}">
+    <title>Kurs exportieren - LLM-Übungssystem</title>
+    <meta name="description" content="Export-Seite für Kurse">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item active">Kurs exportieren</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kurs exportieren: <span th:text="${kurs.name}">Kursname</span></h1>
+                    <p class="lead">Wählen Sie das gewünschte Exportformat für den Kurs und alle zugehörigen Daten.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Export-Optionen -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Export-Optionen</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>Der Kurs kann in verschiedenen Formaten exportiert werden. Wählen Sie das gewünschte Format:</p>
+                            
+                            <div class="row g-4 mb-4">
+                                <!-- JSON-Export -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <h3 class="h5">JSON-Export</h3>
+                                            <p class="small text-muted">Exportiert den Kurs mit allen Daten als JSON-Datei.</p>
+                                            <ul class="small">
+                                                <li>Alle Kurseinheiten</li>
+                                                <li>Alle Aufgaben</li>
+                                                <li>Alle Kursmaterialien (Base64-kodiert)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="card-footer bg-transparent border-0">
+                                            <a th:href="@{/kursbetreuer/kurse/{id}/export/json(id=${kurs.id})}" class="btn btn-outline-primary w-100" data-cy="json-export-button">
+                                                <i class="bi bi-filetype-json me-2"></i>Als JSON exportieren
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- ZIP-Export -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <h3 class="h5">ZIP-Export</h3>
+                                            <p class="small text-muted">Exportiert den Kurs mit allen Daten als ZIP-Archiv.</p>
+                                            <ul class="small">
+                                                <li>Kursdaten als JSON-Datei</li>
+                                                <li>Kursmaterialien als separate Dateien</li>
+                                                <li>Besser für große Kurse geeignet</li>
+                                            </ul>
+                                        </div>
+                                        <div class="card-footer bg-transparent border-0">
+                                            <a th:href="@{/kursbetreuer/kurse/{id}/export/zip(id=${kurs.id})}" class="btn btn-outline-primary w-100" data-cy="zip-export-button">
+                                                <i class="bi bi-file-earmark-zip me-2"></i>Als ZIP exportieren
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info small">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Hinweis:</strong> Der Export-Vorgang kann je nach Umfang des Kurses einige Sekunden dauern.
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Zurück zum Kurs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Hilfe und Informationen -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h2 class="card-title h5 mb-0">Informationen zum Export</h2>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Was wird exportiert?</h3>
+                            <p class="small">Der Export umfasst:</p>
+                            <ul class="small">
+                                <li>Grundlegende Kursdaten (Name, etc.)</li>
+                                <li>Alle Kurseinheiten mit Reihenfolge</li>
+                                <li>Alle Kursmaterialien (des Kurses und der Kurseinheiten)</li>
+                                <li>Alle Aufgaben mit Teilaufgaben</li>
+                            </ul>
+                            
+                            <h3 class="h6 mt-3">Was wird nicht exportiert?</h3>
+                            <p class="small">Nicht im Export enthalten sind:</p>
+                            <ul class="small">
+                                <li>Kursteilnehmer und Belegungsdaten</li>
+                                <li>Lösungsversuche von Studierenden</li>
+                            </ul>
+                            
+                            <div class="alert alert-warning mt-3 small">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Der Export enthält keine sensiblen personenbezogenen Daten.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

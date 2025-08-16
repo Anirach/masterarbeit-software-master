@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Belegung bearbeiten')}">
+    <title>Belegung bearbeiten - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <!-- Breadcrumb für Kurs-basierte Navigation -->
+                <ol class="breadcrumb mb-0" th:if="${returnTo != 'student'}">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kursId})}" th:text="${kursName}">Kurs</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${kursId})}">Belegungen</a></li>
+                    <li class="breadcrumb-item active">Belegung bearbeiten</li>
+                </ol>
+                <!-- Breadcrumb für Student-basierte Navigation -->
+                <ol class="breadcrumb mb-0" th:if="${returnTo == 'student'}">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${studentId})}">Student</a></li>
+                    <li class="breadcrumb-item active">Belegung bearbeiten</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Belegung bearbeiten</h1>
+                    <p class="lead">Passen Sie den Zeitraum der Kursbelegung an.</p>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Belegungsdaten</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Kurs:</strong> <span th:text="${belegung.kursName}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Student:</strong> <span th:text="${belegung.studentName}"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form th:action="@{/kursbetreuer/belegungen/edit/{id}(id=${belegung.id})}" method="post">
+                                <!-- Verstecktes Feld für den returnTo-Parameter -->
+                                <input type="hidden" name="returnTo" th:value="${returnTo}">
+                                
+                                <!-- Zeitraum bearbeiten -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="startDatum" class="form-label">Startdatum</label>
+                                        <input type="date" id="startDatum" name="startDatum" class="form-control" 
+                                               th:value="${belegung.startDatum}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDatum" class="form-label">Enddatum (optional)</label>
+                                        <input type="date" id="endDatum" name="endDatum" class="form-control" 
+                                               th:value="${belegung.endDatum}">
+                                        <div class="form-text">Leer lassen für unbegrenzte Belegung</div>
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="isActive" disabled
+                                           th:checked="${belegung.aktiv}">
+                                    <label class="form-check-label" for="isActive">
+                                        Aktuell aktiv
+                                    </label>
+                                    <div class="form-text" th:if="${belegung.aktiv}">
+                                        Diese Belegung ist aktuell aktiv (heutiges Datum liegt innerhalb des Gültigkeitszeitraums).
+                                    </div>
+                                    <div class="form-text" th:unless="${belegung.aktiv}">
+                                        Diese Belegung ist aktuell nicht aktiv (heutiges Datum liegt außerhalb des Gültigkeitszeitraums).
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="isRegistered" disabled
+                                           th:checked="${belegung.istRegistriert}">
+                                    <label class="form-check-label" for="isRegistered">
+                                        Student registriert
+                                    </label>
+                                    <div class="form-text" th:if="${belegung.istRegistriert}">
+                                        Der Student hat sich in der Anwendung registriert.
+                                    </div>
+                                    <div class="form-text" th:unless="${belegung.istRegistriert}">
+                                        Der Student wurde über seine Matrikelnummer angelegt, hat sich aber noch nicht registriert.
+                                    </div>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="d-flex justify-content-between">
+                                    <!-- Abbrechen-Button mit dynamischer Zielseite basierend auf returnTo -->
+                                    <a th:if="${returnTo == 'student'}"
+                                       th:href="@{/kursbetreuer/nutzer/student/{studentId}(studentId=${studentId})}" 
+                                       class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i> Abbrechen
+                                    </a>
+                                    <a th:if="${returnTo != 'student'}"
+                                       th:href="@{/kursbetreuer/belegungen/kurs/{kursId}(kursId=${kursId})}" 
+                                       class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i> Abbrechen
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h3 class="card-title h5 mb-0">Hinweise</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Das Startdatum gibt an, ab wann der Student Zugriff auf den Kurs hat.</li>
+                                <li>Ein Enddatum ist optional. Ohne Enddatum ist die Belegung zeitlich unbegrenzt.</li>
+                                <li>Eine Belegung ist aktiv, wenn das aktuelle Datum innerhalb des festgelegten Zeitraums liegt.</li>
+                                <li>Wenn Sie eine Belegung komplett entfernen möchten, verwenden Sie die Löschen-Funktion.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

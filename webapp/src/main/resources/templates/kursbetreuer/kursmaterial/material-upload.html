@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${uploadTarget == 'kurs' ? 'Material für Kurs hochladen' : 'Material für Kurseinheit hochladen'})}">
+    <title>Material hochladen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/kursbetreuer/kurse/{id}(id=${kursId})}" th:text="${kursName}">Kursname</a>
+                    </li>
+                    <li class="breadcrumb-item" th:if="${uploadTarget == 'kurseinheit'}">
+                        <a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheitId})}" th:text="${kurseinheitName}">Kurseinheitname</a>
+                    </li>
+                    <li class="breadcrumb-item active">Material hochladen</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">
+                        Material hochladen für
+                        <span th:if="${uploadTarget == 'kurs'}" th:text="${'Kurs '+kursName}">Kursname</span>
+                        <span th:if="${uploadTarget == 'kurseinheit'}" th:text="${'Kurseinheit '+kurseinheitName}">Kurseinheitname</span>
+                    </h1>
+                    <p class="lead">Laden Sie Dokumente oder Bilder hoch, die für die Inhalte relevant sind.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Upload-Formular -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h2 class="card-title h5 mb-0">Datei auswählen</h2>
+                        </div>
+                        <div class="card-body">
+                            <form 
+                                th:action="${uploadTarget == 'kurs'} ? 
+                                    @{/kursbetreuer/kurse/{id}/material/upload(id=${kursId})} : 
+                                    @{/kursbetreuer/kurseinheiten/{id}/material/upload(id=${kurseinheitId})}" 
+                                method="post" 
+                                enctype="multipart/form-data"
+                                class="needs-validation"
+                                novalidate>
+                                
+                                <div class="mb-3">
+                                    <label for="fileUpload" class="form-label">Datei</label>
+                                    <input class="form-control" type="file" id="fileUpload" name="file" data-cy="material-file-input" required>
+                                    <div class="invalid-feedback">
+                                        Bitte wählen Sie eine Datei aus.
+                                    </div>
+                                    <div class="form-text mt-2">
+                                        <strong>Unterstützte Formate:</strong>
+                                        <div>
+                                            <span class="badge bg-primary me-1">PDF</span>
+                                            <span class="badge bg-primary me-1">DOCX</span>
+                                            <span class="badge bg-primary me-1">XLSX</span>
+                                            <span class="badge bg-primary me-1">PPTX</span>
+                                            <span class="badge bg-primary me-1">TXT</span>
+                                            <span class="badge bg-info me-1">JPG</span>
+                                            <span class="badge bg-info me-1">PNG</span>
+                                            <span class="badge bg-info me-1">GIF</span>
+                                            <span class="badge bg-info me-1">SVG</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p class="mb-0">
+                                        <strong>Hinweis:</strong> Der Dateiname wird als Name für das Kursmaterial verwendet.
+                                        Für bessere Übersichtlichkeit empfehlen wir aussagekräftige Dateinamen.
+                                    </p>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a 
+                                        th:href="${uploadTarget == 'kurs'} ? 
+                                            @{/kursbetreuer/kurse/{id}(id=${kursId})} : 
+                                            @{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheitId})}" 
+                                        class="btn btn-outline-secondary" data-cy="material-upload-abbrechen-button">
+                                        <i class="bi bi-arrow-left"></i> <span th:text="#{action.back}">Zurück</span>
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" data-cy="material-hochladen-button">
+                                        <i class="bi bi-upload"></i> <span th:text="#{action.upload}">Hochladen</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <!-- Formularvalidierung aktivieren -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formular-Validierung
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Datei-Input-Validierung
+            const fileInput = document.getElementById('fileUpload');
+            fileInput.addEventListener('change', function() {
+                const maxSize = 10 * 1024 * 1024; // 10 MB
+                
+                if (this.files[0] && this.files[0].size > maxSize) {
+                    this.setCustomValidity('Die Datei ist zu groß. Maximale Größe: 10 MB.');
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

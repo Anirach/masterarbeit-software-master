@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kurs löschen - Bestätigung')}">
+    <title>Kurs löschen - LLM-Übungssystem</title>
+</head>
+
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<div class="breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                <li class="breadcrumb-item active">Kurs löschen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5 text-danger">Kurs löschen</h1>
+                <p class="lead">Bitte bestätigen Sie das Löschen des Kurses.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="'Kurs: ' + ${kurs.name}">Kursname</h5>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bitte beachten Sie</h6>
+                            <p>Das Löschen des Kurses hat folgende Konsequenzen:</p>
+                            <ul>
+                                <li>Alle Kurseinheiten dieses Kurses werden gelöscht</li>
+                                <li>Alle Materialien dieses Kurses werden aus der Wissensbasis entfernt</li>
+                                <li>Alle Aufgaben dieses Kurses werden gelöscht</li>
+                                <li>Studierende verlieren den Zugriff auf diesen Kurs</li>
+                                <li>Lernfortschritte der Studierenden für diesen Kurs gehen verloren</li>
+                            </ul>
+                            <p class="mb-0"><strong>Diese Aktion kann nicht rückgängig gemacht werden!</strong></p>
+                        </div>
+
+                        <form th:action="@{/kursbetreuer/kurse/{id}/loeschen(id=${kurs.id})}" method="post" class="mt-4">
+
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" name="confirmDelete" data-cy="confirm-delete-checkbox" required>
+                                <label class="form-check-label" for="confirmDelete">
+                                    Ich bestätige, dass ich den Kurs <strong th:text="${kurs.name}">Kursname</strong> und alle zugehörigen Daten unwiderruflich löschen möchte.
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a th:href="@{/kursbetreuer/kursverwaltung}" class="btn btn-outline-secondary" data-cy="abbrechen-button">Abbrechen</a>
+                                <button type="submit" class="btn btn-danger" data-cy="bestaetigen-button">Kurs unwiderruflich löschen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Alternative</h5>
+                        <p class="card-text">Anstatt den Kurs zu löschen, könnten Sie:</p>
+                        <ul class="card-text">
+                            <li>Den Kurs für Studierende deaktivieren, ohne ihn zu löschen</li>
+                            <li>Den Kurs nur für bestimmte Studierende freigeben</li>
+                            <li>Die Inhalte archivieren und für spätere Verwendung aufbewahren</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

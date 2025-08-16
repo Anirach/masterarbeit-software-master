@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Fragment für Chat-Nachrichten -->
+<div th:fragment="nachrichten">
+    <!-- Wenn keine Nachrichten vorhanden sind -->
+    <div th:if="${chat.nachrichten.isEmpty()}" class="text-center py-5">
+        <i class="bi bi-chat-text fs-1 text-muted"></i>
+        <p class="mt-3 text-muted">Stelle eine Frage, um den Chat zu beginnen.</p>
+    </div>
+    
+    <!-- Nachrichten-Liste -->
+    <div th:unless="${chat.nachrichten.isEmpty()}" class="chat-messages-list">
+        <div th:each="nachricht : ${chat.nachrichten}" 
+             class="chat-message" 
+             th:classappend="${nachricht.istSystemNachricht ? 'system-message' : 'student-message'}"
+             th:attr="data-cy=${nachricht.istSystemNachricht ? 'chat-message-system' : 'chat-message-student'}">
+            <div class="message-sender">
+                <strong th:text="${nachricht.istSystemNachricht ? 'System' : 'Du'}">Sender</strong>
+            </div>
+            <!-- Unterschiedliche Rendering für System- und Student-Nachrichten -->
+            <div class="message-content" th:if="${!nachricht.istSystemNachricht}" th:text="${nachricht.inhalt}">
+                Nachrichteninhalt (Student)
+            </div>
+            <div class="message-content" th:if="${nachricht.istSystemNachricht}" th:utext="${nachricht.inhaltHtml}" data-cy="system-message-content">
+                Nachrichteninhalt (System, mit Markdown)
+            </div>
+            <!-- Quellenangaben anzeigen -->
+            <div class="message-references" th:if="${nachricht.istSystemNachricht && !nachricht.referenzen.isEmpty()}">
+                <div class="mt-1 fw-bold small">Quellen:</div>
+                <ul class="list-unstyled small">
+                    <li th:each="referenz : ${nachricht.referenzen}">
+                        <i class="bi bi-journal-text"></i>
+                        <span th:text="${referenz.kursMaterialName}">Dateiname</span>
+                        <span th:if="${referenz.seitennummer != null}">
+                            (Seite <span th:text="${referenz.seitennummer}">1</span>)
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            <div class="message-time" 
+                 th:text="${#temporals.format(nachricht.zeitpunkt, 'dd.MM.yyyy HH:mm')}">
+                01.01.2023 12:00
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

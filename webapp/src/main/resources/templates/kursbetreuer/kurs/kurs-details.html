@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${kurs.name})}">
+    <title>Kursdetails - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item active" th:text="${kurs.name}">Kursname</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Kurs: <span th:text="${kurs.name}">Kursname</span></h1>
+                    <p class="lead">Hier können Sie die Details und Inhalte des Kurses verwalten.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <!-- Kursdetails -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="card-title h5 mb-0">Kursinformationen</h2>
+                            <div>
+                                <a th:href="@{/kursbetreuer/kurse/{id}/bearbeiten(id=${kurs.id})}" class="btn btn-sm btn-secondary" data-cy="kurs-bearbeiten-button" th:text="#{course.edit}">Kurs bearbeiten</a>
+                                <a th:href="@{/kursbetreuer/kurse/{id}/kurseinheiten/neu(id=${kurs.id})}" class="btn btn-sm btn-success" data-cy="neue-kurseinheit-button" th:text="#{course.unit.new}">Neue Kurseinheit</a>
+                                <a th:href="@{/kursbetreuer/kurse/{id}/export(id=${kurs.id})}" class="btn btn-sm btn-outline-primary" data-cy="kurs-exportieren-button">
+                                    <i class="bi bi-download"></i> <span th:text="#{course.export}">Exportieren</span>
+                                </a>
+                                <a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${kurs.id})}" class="btn btn-sm btn-info" data-cy="kursbelegungen-anzeigen-button">Belegungen verwalten</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Kurseinheiten</h3>
+                            
+                            <!-- Wenn Kurseinheiten vorhanden sind -->
+                            <div th:if="${kurs.kurseinheiten != null && !kurs.kurseinheiten.isEmpty()}" 
+                                 th:replace="~{fragments/kursbetreuer/kurseinheiten-table :: kurseinheiten-table}">
+                            </div>
+                            
+                            <!-- Wenn keine Kurseinheiten vorhanden sind -->
+                            <div th:if="${kurs.kurseinheiten == null || kurs.kurseinheiten.isEmpty()}" class="text-center p-4 bg-light rounded">
+                                <p class="text-muted mb-3">Diesem Kurs sind noch keine Kurseinheiten zugeordnet.</p>
+                                <p>Erstellen Sie die erste Kurseinheit, um Lehrmaterial und Übungsaufgaben hinzuzufügen.</p>
+                                <a th:href="@{/kursbetreuer/kurse/{id}/kurseinheiten/neu(id=${kurs.id})}" class="btn btn-success mt-2" data-cy="erste-kurseinheit-anlegen-button">Erste Kurseinheit anlegen</a>
+                            </div>
+                            
+                            <h3 class="h6 mb-3 mt-4">Belegungen</h3>
+                            <div class="mb-3">
+                                <p class="mb-1">Anzahl der Belegungen: <span class="fw-bold" th:text="${kurs.anzahlBelegungen != null ? kurs.anzahlBelegungen : 0}">0</span></p>
+                                <p class="mb-1">Davon aktiv: <span class="fw-bold" th:text="${kurs.anzahlAktiveBelegungen != null ? kurs.anzahlAktiveBelegungen : 0}">0</span></p>
+                                <a th:href="@{/kursbetreuer/belegungen/kurs/{id}(id=${kurs.id})}" class="btn btn-sm btn-outline-primary" data-cy="belegungen-verwalten-button">
+                                    <i class="bi bi-people"></i> Belegungen verwalten
+                                </a>
+                                <a th:href="@{/kursbetreuer/fortschritt/kurs/{id}(id=${kurs.id})}" class="btn btn-sm btn-outline-success" data-cy="progress-overview-button">
+                                    <i class="bi bi-graph-up"></i> Fortschrittsübersicht
+                                </a>
+                            </div>
+                            
+                            <h3 class="h6 mb-3 mt-4">Materialübersicht</h3>
+                            
+                            <!-- Baumstruktur für Kursmaterialien -->
+                            <div th:replace="~{fragments/kursbetreuer/kursmaterial-tree :: kursmaterial-tree(${kurs})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <a th:href="@{/kursbetreuer/kursverwaltung}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Zurück zur Kursverwaltung
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

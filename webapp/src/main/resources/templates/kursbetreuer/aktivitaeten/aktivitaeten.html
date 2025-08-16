@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Aktivitätenübersicht')}">
+    <title>Aktivitätenübersicht</title>
+</head>
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Aktivitätenübersicht</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="h2 mb-4">Aktivitätenübersicht</h1>
+                    
+                    <p class="lead mb-4">
+                        Hier können Sie alle Aktivitäten im System einsehen und filtern. 
+                        Die Übersicht zeigt chronologisch, wer welche Aktionen im System ausgeführt hat.
+                    </p>
+                    
+                    <!-- Aktivitäten-Container mit filter und pagination -->
+                    <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-container(${aktivitaeten}, 'Alle Systemaktivitäten', true, null, ${isKursbetreuer})}"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

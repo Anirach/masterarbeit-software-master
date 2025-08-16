@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Kursbelegungen')}">
+    <title>Kursbelegungen - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item active">Belegungen</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="display-5">Belegungen: <span th:text="${kurs.name}">Kursname</span></h1>
+                            <p class="lead">Hier können Sie die Belegungen für diesen Kurs verwalten.</p>
+                        </div>
+                        <a th:href="@{/kursbetreuer/fortschritt/kurs/{id}(id=${kurs.id})}" 
+                           class="btn btn-outline-info">
+                            <i class="bi bi-graph-up"></i> Fortschritt anzeigen
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+
+            <!-- Aktionsbuttons -->
+            <div class="row mb-4">
+                <div class="col">
+                    <a th:href="@{/kursbetreuer/belegungen/add/{kursId}(kursId=${kurs.id})}" class="btn btn-success" data-cy="neue-belegung-button">
+                        <i class="bi bi-plus-circle"></i> <span th:text="#{student.add}">Student hinzufügen</span>
+                    </a>
+                    <a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" class="btn btn-secondary ms-2" data-cy="zurueck-zum-kurs-button">
+                        <i class="bi bi-arrow-left"></i> <span th:text="#{course.back.to.details}">Zurück zu Kursdetails</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tabelle mit Belegungen -->
+            <div class="row">
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Kursbelegungen</h2>
+                        </div>
+                        <div class="card-body">
+                            <div th:replace="~{fragments/kursbetreuer/belegungen-table :: belegungen-table(${belegungen}, ${kurs.id})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragment für alle Benachrichtigungen/Meldungen -->
+    <div th:fragment="messages">
+        <!-- Erfolgsmeldung -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert" data-cy="success-message">
+            <span th:text="${successMessage}">Erfolgsmeldung</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+        </div>
+        
+        <!-- Infomeldung -->
+        <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show mb-4" role="alert" data-cy="info-message">
+            <span th:text="${infoMessage}">Infomeldung</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+        </div>
+        
+        <!-- Warnmeldung -->
+        <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show mb-4" role="alert" data-cy="warn-message">
+            <span th:text="${warningMessage}">Warnmeldung</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+        </div>
+        
+        <!-- Fehlermeldung -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert" data-cy="error-message">
+            <span th:text="${errorMessage}">Fehlermeldung</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+        </div>
+    </div>
+    
+    <!-- Einzelnes Fragment für Erfolgsmeldungen -->
+    <div th:fragment="successMessage" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <span th:text="${successMessage}">Erfolgsmeldung</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+    
+    <!-- Einzelnes Fragment für Infomeldungen -->
+    <div th:fragment="infoMessage" class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+        <span th:text="${infoMessage}">Infomeldung</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+    
+    <!-- Einzelnes Fragment für Warnmeldungen -->
+    <div th:fragment="warningMessage" class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <span th:text="${warningMessage}">Warnmeldung</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+    
+    <!-- Einzelnes Fragment für Fehlermeldungen -->
+    <div th:fragment="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <span th:text="${errorMessage}">Fehlermeldung</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+</body>
+</html>

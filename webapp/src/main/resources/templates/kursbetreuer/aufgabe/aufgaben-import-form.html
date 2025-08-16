@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Aufgaben importieren')}">
+    <title>Aufgaben importieren - LLM-Übungssystem</title>
+    <meta name="description" content="Import-Seite für Übungsaufgaben">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kursverwaltung}">Kursverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurse/{id}(id=${kurs.id})}" th:text="${kurs.name}">Kursname</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" th:text="${kurseinheit.name}">Kurseinheit</a></li>
+                    <li class="breadcrumb-item active">Aufgaben importieren</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Aufgaben importieren</h1>
+                    <p class="lead">Hier können Sie Aufgaben aus einer JSON- oder PDF-Datei importieren.</p>
+                </div>
+            </div>
+            
+            <!-- Meldungen einbinden -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Import-Formular -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Datei für Import auswählen</h2>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/kursbetreuer/kurseinheiten/{kurseinheitId}/aufgaben/import(kurseinheitId=${kurseinheit.id})}" 
+                                  method="post" 
+                                  enctype="multipart/form-data"
+                                  class="needs-validation"
+                                  data-cy="aufgaben-import-form"
+                                  novalidate>
+                                
+                                <div class="mb-4">
+                                    <label for="file-type" class="form-label">Import-Typ auswählen</label>
+                                    <select class="form-select mb-3" id="file-type" name="fileType">
+                                        <option value="json">JSON-Datei (exportierte Aufgaben)</option>
+                                        <option value="pdf-single">PDF-Datei (einzelne Datei)</option>
+                                        <option value="pdf-pair">PDF-Dateien (Aufgaben + Lösungen)</option>
+                                    </select>
+                                    
+                                    <!-- JSON-Upload -->
+                                    <div id="json-upload" class="file-upload-section">
+                                        <label for="json-file" class="form-label">JSON-Datei auswählen</label>
+                                        <input type="file" class="form-control" id="json-file" name="file" 
+                                               accept=".json" required data-cy="json-file-input">
+                                        <div class="invalid-feedback">
+                                            Bitte wählen Sie eine JSON-Datei aus.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Single PDF Upload -->
+                                    <div id="pdf-single-upload" class="file-upload-section d-none">
+                                        <label for="pdf-file" class="form-label">PDF-Datei auswählen</label>
+                                        <input type="file" class="form-control" id="pdf-file" name="file" 
+                                               accept=".pdf" required data-cy="pdf-file-input" disabled>
+                                        <div class="invalid-feedback">
+                                            Bitte wählen Sie eine PDF-Datei aus.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Paired PDF Upload -->
+                                    <div id="pdf-pair-upload" class="file-upload-section d-none">
+                                        <label for="assignment-file" class="form-label">Aufgaben-PDF auswählen</label>
+                                        <input type="file" class="form-control mb-2" id="assignment-file" name="assignmentFile" 
+                                               accept=".pdf" required data-cy="assignment-file-input" disabled>
+                                        <div class="invalid-feedback">
+                                            Bitte wählen Sie eine Aufgaben-PDF-Datei aus.
+                                        </div>
+                                        
+                                        <label for="solution-file" class="form-label">Lösungs-PDF auswählen (optional)</label>
+                                        <input type="file" class="form-control" id="solution-file" name="solutionFile" 
+                                               accept=".pdf" data-cy="solution-file-input" disabled>
+                                        <div class="invalid-feedback">
+                                            Bitte wählen Sie eine gültige PDF-Datei aus.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-text mt-2">
+                                        Unterstützte Dateiformate: JSON (.json), PDF (.pdf)
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h3 class="h6">Hinweise zum Import</h3>
+                                    <ul class="small text-muted">
+                                        <li>JSON-Dateien müssen im korrekten Format vorliegen (exportiert aus diesem System).</li>
+                                        <li>PDF-Import ist eine experimentelle Funktion und kann bei komplexen PDFs fehlschlagen.</li>
+                                        <li>Die importierten Aufgaben werden der Kurseinheit <strong th:text="${kurseinheit.name}">Kurseinheit</strong> hinzugefügt.</li>
+                                        <li>Bestehende Aufgaben werden nicht überschrieben.</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/kursbetreuer/kurseinheiten/{id}(id=${kurseinheit.id})}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i> Zurück zur Kurseinheit
+                                    </a>
+                                    
+                                    <button type="submit" class="btn btn-primary" data-cy="aufgaben-import-button">
+                                        <i class="bi bi-upload"></i> Aufgaben importieren
+                                    </button>
+                                </div>
+                                
+                                <!-- Ladeanzeige während des Imports -->
+                                <div id="import-spinner" class="text-center py-3 mt-3 hide-initially">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Importiere Aufgaben...</span>
+                                    </div>
+                                    <p class="mt-2">Aufgaben werden importiert. Dies kann einen Moment dauern...</p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Hilfe und Informationen -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h2 class="card-title h5 mb-0">Informationen zum Import</h2>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">So funktioniert der Import</h3>
+                            <p class="small">Importieren Sie Aufgaben einfach aus einer vorhandenen JSON- oder PDF-Datei:</p>
+                            
+                            <h4 class="h6 mt-3">JSON-Import</h4>
+                            <p class="small">JSON-Dateien können aus diesem System exportierte Aufgaben enthalten. Der Import unterstützt:</p>
+                            <ul class="small">
+                                <li>Einzelne Aufgaben</li>
+                                <li>Mehrere Aufgaben in einer Datei</li>
+                                <li>Komplexe Aufgaben mit Teilaufgaben</li>
+                            </ul>
+                            
+                            <h4 class="h6 mt-3">PDF-Import (experimentell)</h4>
+                            <p class="small">Der PDF-Import versucht, Aufgaben aus PDF-Dateien zu extrahieren. Diese Funktion ist experimentell und kann bei komplexen PDFs zu unerwarteten Ergebnissen führen.</p>
+                            
+                            <div class="alert alert-info mt-3 small">
+                                <i class="bi bi-info-circle me-2"></i> Tipp: Verwenden Sie zum Exportieren von Aufgaben den Export-Button auf der Kurseinheit-Seite oder auf der Aufgaben-Detailseite.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <!-- Formularvalidierung und dynamische Formularfelder -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form-Validierung initialisieren
+            const forms = document.querySelectorAll('.needs-validation');
+            const importButton = document.querySelector('[data-cy="aufgaben-import-button"]');
+            const importSpinner = document.getElementById('import-spinner');
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        // Nur wenn das Formular gültig ist, den Ladeindikator anzeigen
+                        if (importSpinner) {
+                            importSpinner.classList.remove('hide-initially');
+                        }
+                        
+                        // Optional: Button deaktivieren, um Mehrfachklicks zu verhindern
+                        if (importButton) {
+                            importButton.disabled = true;
+                            importButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importiere...';
+                        }
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Upload-Typ-Umschaltung
+            const fileTypeSelect = document.getElementById('file-type');
+            const jsonUpload = document.getElementById('json-upload');
+            const pdfSingleUpload = document.getElementById('pdf-single-upload');
+            const pdfPairUpload = document.getElementById('pdf-pair-upload');
+            
+            const jsonFileInput = document.getElementById('json-file');
+            const pdfFileInput = document.getElementById('pdf-file');
+            const assignmentFileInput = document.getElementById('assignment-file');
+            const solutionFileInput = document.getElementById('solution-file');
+            
+            fileTypeSelect.addEventListener('change', function() {
+                // Alle Sektionen ausblenden und Felder deaktivieren
+                jsonUpload.classList.add('d-none');
+                pdfSingleUpload.classList.add('d-none');
+                pdfPairUpload.classList.add('d-none');
+                
+                jsonFileInput.disabled = true;
+                jsonFileInput.required = false;
+                
+                pdfFileInput.disabled = true;
+                pdfFileInput.required = false;
+                
+                assignmentFileInput.disabled = true;
+                assignmentFileInput.required = false;
+                
+                solutionFileInput.disabled = true;
+                solutionFileInput.required = false;
+                
+                // Je nach Auswahl die entsprechende Sektion anzeigen und Felder aktivieren
+                switch(fileTypeSelect.value) {
+                    case 'json':
+                        jsonUpload.classList.remove('d-none');
+                        jsonFileInput.disabled = false;
+                        jsonFileInput.required = true;
+                        break;
+                    case 'pdf-single':
+                        pdfSingleUpload.classList.remove('d-none');
+                        pdfFileInput.disabled = false;
+                        pdfFileInput.required = true;
+                        break;
+                    case 'pdf-pair':
+                        pdfPairUpload.classList.remove('d-none');
+                        assignmentFileInput.disabled = false;
+                        assignmentFileInput.required = true;
+                        solutionFileInput.disabled = false;
+                        // Lösungsdatei ist optional, daher nicht required
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

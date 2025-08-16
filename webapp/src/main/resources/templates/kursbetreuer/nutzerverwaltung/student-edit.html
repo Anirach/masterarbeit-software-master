@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Student bearbeiten')}">
+    <title>Student bearbeiten - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" th:text="${student.displayName ?: 'Student'}">Student</a></li>
+                    <li class="breadcrumb-item active">Bearbeiten</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5">Student bearbeiten</h1>
+                    <p class="lead">Hier können Sie die Daten des Studenten bearbeiten.</p>
+                </div>
+            </div>
+
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="card-title h5 mb-0">Studentendaten</h2>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/kursbetreuer/nutzer/student/edit/{studentId}(studentId=${student.id})}" 
+                                  th:object="${student}" method="post" class="needs-validation" novalidate>
+                                
+                                <!-- Matrikelnummer (nur anzeigen, nicht bearbeitbar) -->
+                                <div class="mb-3">
+                                    <label for="matrikelnummer" class="form-label">Matrikelnummer</label>
+                                    <input type="text" class="form-control" id="matrikelnummer" th:field="*{matrikelnummer}" readonly>
+                                    <div class="form-text">Die Matrikelnummer kann nicht geändert werden.</div>
+                                </div>
+                                
+                                <!-- Vorname -->
+                                <div class="mb-3">
+                                    <label for="vorname" class="form-label">Vorname</label>
+                                    <input type="text" class="form-control" id="vorname" th:field="*{vorname}" 
+                                           th:class="${#fields.hasErrors('vorname')} ? 'form-control is-invalid' : 'form-control'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}">
+                                        Bitte geben Sie einen Vornamen ein.
+                                    </div>
+                                </div>
+                                
+                                <!-- Nachname -->
+                                <div class="mb-3">
+                                    <label for="nachname" class="form-label">Nachname</label>
+                                    <input type="text" class="form-control" id="nachname" th:field="*{nachname}" 
+                                           th:class="${#fields.hasErrors('nachname')} ? 'form-control is-invalid' : 'form-control'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}">
+                                        Bitte geben Sie einen Nachnamen ein.
+                                    </div>
+                                </div>
+                                
+                                <!-- E-Mail -->
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-Mail</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" 
+                                           th:class="${#fields.hasErrors('email')} ? 'form-control is-invalid' : 'form-control'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                                        Bitte geben Sie eine gültige E-Mail-Adresse ein.
+                                    </div>
+                                </div>
+                                
+                                <!-- Registrierungsstatus (nur anzeigen, nicht bearbeitbar) -->
+                                <div class="mb-3">
+                                    <label class="form-label">Registrierungsstatus</label>
+                                    <div>
+                                        <span th:if="*{istRegistriert}" class="badge bg-success">Registriert</span>
+                                        <span th:unless="*{istRegistriert}" class="badge bg-warning text-dark">Nicht registriert</span>
+                                        <!-- Verstecktes Feld, um den aktuellen Wert beizubehalten -->
+                                        <input type="hidden" th:field="*{istRegistriert}">
+                                    </div>
+                                    <div class="form-text">Der Registrierungsstatus kann nicht manuell geändert werden.</div>
+                                </div>
+
+                                <input type="hidden" th:field="*{displayName}" />
+                                <input type="hidden" th:field="*{id}" />
+
+                                <!-- Submit-Button und Abbrechen -->
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/kursbetreuer/nutzer/student/{id}(id=${student.id})}" 
+                                       class="btn btn-secondary" data-cy="student-edit-abbrechen-button">
+                                        <i class="bi bi-x-circle"></i> Abbrechen
+                                    </a>
+                                    <button type="submit" class="btn btn-success" data-cy="student-speichern-button">
+                                        <i class="bi bi-check-circle"></i> Speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h3 class="card-title h5 mb-0">Hinweise</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Die Matrikelnummer des Studenten kann nicht geändert werden.</li>
+                                <li>Der Registrierungsstatus kann nicht manuell geändert werden. Er wird automatisch aktualisiert, wenn sich ein Student selbst registriert.</li>
+                                <li>Nicht registrierte Studenten sind "Dummy"-Einträge, die noch keine vollständigen Daten haben.</li>
+                                <li>Sie können nur E-Mail, Vorname und Nachname bearbeiten.</li>
+                                <li>Bei Änderung der E-Mail-Adresse muss sichergestellt werden, dass diese noch nicht von einem anderen Nutzer verwendet wird.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

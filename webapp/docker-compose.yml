@@ -1,0 +1,16 @@
+# docker-compose für Entwicklung (startet nur Datenbank)
+
+version: "3.5"
+services:
+  mariadb:
+    image: mariadb:11.7.2
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: app
+      MARIADB_DATABASE: app
+    volumes:
+      - mariadb-data-app:/var/lib/mysql
+    ports:
+      - "3307:3306"
+volumes:
+  mariadb-data-app:

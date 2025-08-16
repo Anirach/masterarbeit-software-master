@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Fragment für den Erklärung-Modal -->
+<div th:fragment="erlaeuterung-modal" id="erlaeuterungModal" class="modal fade" tabindex="-1" aria-labelledby="erlaeuterungModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="erlaeuterungModalLabel">Aufgabenerklärung</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body" id="erlaeuterungContainer">
+                <!-- Hier wird der Inhalt dynamisch über HTMX geladen -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Lade Erklärung...</span>
+                    </div>
+                    <p class="mt-3">Generiere Erklärung zur Aufgabe...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fragment für den dynamisch geladenen Erklärung-Inhalt -->
+<div th:fragment="erlaeuterung-content">
+    <!-- Fallback: Keine Erklärung verfügbar -->
+    <div th:if="${explanation == null}" class="text-center py-5">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Leider ist momentan keine Erklärung verfügbar.
+        </div>
+    </div>
+    
+    <!-- Erklärung anzeigen -->
+    <div th:unless="${explanation == null}">
+        <div class="alert alert-primary mb-4">
+            <h6 class="alert-heading">
+                <i class="bi bi-lightbulb me-2"></i>Erklärung zur Aufgabe
+            </h6>
+            <p class="mb-0">
+                Diese Erklärung soll dir helfen, die Aufgabe besser zu verstehen und Lösungsansätze zu finden.
+            </p>
+        </div>
+        
+        <div class="erlaeuterung-content">
+            <div th:utext="${explanation.explanation}">
+                Erklärung wird hier angezeigt...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fragment für den Feedback-Modal -->
+<div th:fragment="feedback-modal" id="feedbackModal" class="modal fade" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="feedbackModalLabel">Verbesserungsvorschläge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body" id="feedbackContainer">
+                <!-- Hier wird der Inhalt dynamisch über HTMX geladen -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Lade Verbesserungsvorschläge...</span>
+                    </div>
+                    <p class="mt-3">Generiere Verbesserungsvorschläge zur Lösung...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fragment für den dynamisch geladenen Feedback-Inhalt -->
+<div th:fragment="feedback-content">
+    <!-- Fallback: Kein Feedback verfügbar -->
+    <div th:if="${feedback == null}" class="text-center py-5">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Leider sind momentan keine Verbesserungsvorschläge verfügbar.
+        </div>
+    </div>
+    
+    <!-- Feedback anzeigen -->
+    <div th:unless="${feedback == null}">
+        <div class="alert alert-warning mb-4">
+            <h6 class="alert-heading">
+                <i class="bi bi-arrow-up-circle me-2"></i>So kannst du deine Lösung verbessern
+            </h6>
+            <p class="mb-0">
+                Diese Vorschläge sollen dir helfen, deine Lösung zu optimieren und mehr Punkte zu erreichen.
+            </p>
+        </div>
+        
+        <div class="feedback-detailed-content p-3 border rounded bg-light shadow-sm">
+            <div th:utext="${feedback.feedback}" class="feedback-content">
+                Verbesserungsvorschläge werden hier angezeigt...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS für die Dialog-Darstellung -->
+<style th:fragment="dialogs-style">
+    .erlaeuterung-content, .feedback-detailed-content {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .erlaeuterung-content code, .feedback-detailed-content code {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        padding: 2px 4px;
+    }
+    
+    .erlaeuterung-content pre, .feedback-detailed-content pre {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        padding: 1rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+    }
+    
+    .erlaeuterung-btn, .feedback-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .erlaeuterung-btn:hover, .feedback-btn:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Dialog-spezifische Styles */
+    #erlaeuterungModal .modal-lg, #feedbackModal .modal-lg {
+        max-width: 900px;
+    }
+</style>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${kursbetreuer.vorname + ' ' + kursbetreuer.nachname})}">
+    <title>Kursbetreuer Details - LLM-Übungssystem</title>
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/kursbetreuer/nutzer}">Nutzerverwaltung</a></li>
+                    <li class="breadcrumb-item active" th:text="${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">Kursbetreuer Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <main class="main-content">
+        <div class="container">
+            <!-- Erfolgs- und Fehlermeldungen -->
+            <div th:replace="~{fragments/messages :: messages}"></div>
+
+            <!-- Kursbetreuer Header -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-5" th:text="${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">Max Mustermann</h1>
+                    <p th:if="${kursbetreuer.email != null}" th:text="'E-Mail: ' + ${kursbetreuer.email}">E-Mail: max.mustermann@example.com</p>
+                </div>
+                <div class="col-md-auto">
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/edit/{id}(id=${kursbetreuer.id})}" 
+                           class="btn btn-primary" data-cy="edit-kursbetreuer-button">
+                            <i class="bi bi-pencil me-1"></i> Bearbeiten
+                        </a>
+                        <button type="button" class="btn btn-warning" 
+                                data-bs-toggle="modal" data-bs-target="#passwordResetModal"
+                                th:data-nutzer-id="${kursbetreuer.id}"
+                                th:data-nutzer-name="${kursbetreuer.vorname + ' ' + kursbetreuer.nachname}">
+                            <i class="bi bi-key me-1"></i> Passwort zurücksetzen
+                        </button>
+                        <a th:href="@{/kursbetreuer/nutzer/kursbetreuer/{id}/loeschen(id=${kursbetreuer.id})}" 
+                           class="btn btn-danger" data-cy="delete-kursbetreuer-button">
+                            <i class="bi bi-trash me-1"></i> Löschen
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Aktivitäten -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div th:replace="~{fragments/aktivitaeten-htmx :: aktivitaeten-container(${aktivitaeten}, 'Aktivitäten', false, ${kursbetreuer.id}, ${isKursbetreuer})}"></div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="row mb-4">
+                <div class="col">
+                    <a th:href="@{/kursbetreuer/nutzer}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Zurück zur Nutzerverwaltung
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal für das Zurücksetzen des Passworts -->
+    <div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordResetModalLabel">Passwort zurücksetzen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Möchten Sie das Passwort für <span id="resetPasswordNutzerName"></span> wirklich zurücksetzen?</p>
+                    <p>Ein neues zufälliges Passwort wird generiert und angezeigt.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <form id="resetPasswordForm" method="post" action="">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-warning">Passwort zurücksetzen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    
+    <script>
+        // JavaScript für die Modals
+        document.addEventListener('DOMContentLoaded', function() {
+            // Passwort zurücksetzen Modal
+            var passwordResetModal = document.getElementById('passwordResetModal');
+            if (passwordResetModal) {
+                passwordResetModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var nutzerId = button.getAttribute('data-nutzer-id');
+                    var nutzerName = button.getAttribute('data-nutzer-name');
+                    
+                    document.getElementById('resetPasswordNutzerName').textContent = nutzerName;
+                    document.getElementById('resetPasswordForm').action = '/kursbetreuer/nutzer/passwort/reset/' + nutzerId;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
